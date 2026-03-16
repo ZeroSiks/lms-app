@@ -1,0 +1,183 @@
+generator client {
+  provider = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Announcement {
+  id        Int      @id @default(autoincrement())
+  title     String
+  content   String
+  createdAt DateTime @default(now())
+  courseId  Int
+  authorId  Int
+  User      User     @relation(fields: [authorId], references: [id])
+  Course    Course   @relation(fields: [courseId], references: [id])
+}
+
+model Assignment {
+  id          Int              @id @default(autoincrement())
+  title       String
+  description String
+  dueDate     DateTime
+  maxPoints   Int
+  status      AssignmentStatus @default(DRAFT)
+  moduleId    Int
+  Module      Module           @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  Submission  Submission[]
+}
+
+model Course {
+  id             Int            @id @default(autoincrement())
+  title          String
+  description    String
+  thumbnailUrl   String?
+  code           String         @unique
+  startDate      DateTime
+  endDate        DateTime
+  isPublished    Boolean        @default(false)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime
+  instructorId   Int
+  categoryId     Int
+  Announcement   Announcement[]
+  CourseCategory CourseCategory @relation(fields: [categoryId], references: [id])
+  User           User           @relation(fields: [instructorId], references: [id])
+  Enrollment     Enrollment[]
+  Module         Module[]
+}
+
+model CourseCategory {
+  id     Int      @id @default(autoincrement())
+  name   String   @unique
+  Course Course[]
+}
+
+model Enrollment {
+  id         Int              @id @default(autoincrement())
+  userId     Int
+  courseId   Int
+  status     EnrollmentStatus @default(ACTIVE)
+  enrolledAt DateTime         @default(now())
+  Course     Course           @relation(fields: [courseId], references: [id])
+  User       User             @relation(fields: [userId], references: [id])
+
+  @@unique([userId, courseId])
+}
+
+model Lesson {
+  id             Int              @id @default(autoincrement())
+  title          String
+  content        String
+  videoUrl       String?
+  duration       Int?
+  order          Int
+  moduleId       Int
+  Module         Module           @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  LessonProgress LessonProgress[]
+  Resource       Resource[]
+}
+
+model LessonProgress {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  lessonId    Int
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+  Lesson      Lesson    @relation(fields: [lessonId], references: [id])
+
+  @@unique([userId, lessonId])
+}
+
+model Message {
+  id                            Int      @id @default(autoincrement())
+  content                       String
+  createdAt                     DateTime @default(now())
+  senderId                      Int
+  receiverId                    Int
+  User_Message_receiverIdToUser User     @relation("Message_receiverIdToUser", fields: [receiverId], references: [id])
+  User_Message_senderIdToUser   User     @relation("Message_senderIdToUser", fields: [senderId], references: [id])
+}
+
+model Module {
+  id          Int          @id @default(autoincrement())
+  title       String
+  description String?
+  order       Int
+  courseId    Int
+  Assignment  Assignment[]
+  Lesson      Lesson[]
+  Course      Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+}
+
+model Resource {
+  id       Int    @id @default(autoincrement())
+  title    String
+  type     String
+  url      String
+  lessonId Int
+  Lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+}
+
+model Submission {
+  id           Int              @id @default(autoincrement())
+  content      String?
+  fileUrl      String?
+  submittedAt  DateTime         @default(now())
+  grade        Int?
+  feedback     String?
+  status       SubmissionStatus @default(PENDING)
+  userId       Int
+  assignmentId Int
+  Assignment   Assignment       @relation(fields: [assignmentId], references: [id])
+  User         User             @relation(fields: [userId], references: [id])
+
+  @@unique([userId, assignmentId])
+}
+
+model User {
+  id                               Int            @id @default(autoincrement())
+  email                            String         @unique
+  passwordHash                     String
+  firstName                        String
+  lastName                         String
+  role                             Role           @default(STUDENT)
+  avatarUrl                        String?
+  bio                              String?
+  createdAt                        DateTime       @default(now())
+  updatedAt                        DateTime
+  Announcement                     Announcement[]
+  Course                           Course[]
+  Enrollment                       Enrollment[]
+  Message_Message_receiverIdToUser Message[]      @relation("Message_receiverIdToUser")
+  Message_Message_senderIdToUser   Message[]      @relation("Message_senderIdToUser")
+  Submission                       Submission[]
+}
+
+enum AssignmentStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  COMPLETED
+  DROPPED
+}
+
+enum Role {
+  ADMIN
+  INSTRUCTOR
+  STUDENT
+}
+
+enum SubmissionStatus {
+  PENDING
+  SUBMITTED
+  GRADED
+  LATE
+}
