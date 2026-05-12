@@ -1,0 +1,5 @@
+Superadmin Credentials
+======================
+Email:    admin@lms.com
+Password: Admin@12345
+Role:     ADMIN

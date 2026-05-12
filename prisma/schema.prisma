@@ -88,6 +88,7 @@ model LessonProgress {
   completed   Boolean   @default(false)
   completedAt DateTime?
   Lesson      Lesson    @relation(fields: [lessonId], references: [id])
+  User        User      @relation(fields: [userId], references: [id])
 
   @@unique([userId, lessonId])
 }
@@ -147,11 +148,13 @@ model User {
   role                             Role           @default(STUDENT)
   avatarUrl                        String?
   bio                              String?
+  refreshToken                     String?
   createdAt                        DateTime       @default(now())
-  updatedAt                        DateTime
+  updatedAt                        DateTime       @updatedAt
   Announcement                     Announcement[]
   Course                           Course[]
   Enrollment                       Enrollment[]
+  LessonProgress                   LessonProgress[]
   Message_Message_receiverIdToUser Message[]      @relation("Message_receiverIdToUser")
   Message_Message_senderIdToUser   Message[]      @relation("Message_senderIdToUser")
   Submission                       Submission[]
