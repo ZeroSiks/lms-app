@@ -9,6 +9,11 @@ interface AuthUser {
 }
 
 export const useAuthStore = defineStore('auth', () => {
+
+    // ====================
+    //       State
+    // ====================
+
     const userCookie = useCookie<AuthUser | null>('lms_user', {
         default: () => null,
         maxAge: 60 * 60 * 24 * 7,
@@ -18,14 +23,48 @@ export const useAuthStore = defineStore('auth', () => {
         maxAge: 60 * 60 * 15,
     })
 
+    // ====================
+    //      Computed
+    // ====================
+
     const user = computed(() => userCookie.value)
     const accessToken = computed(() => tokenCookie.value)
     const isLoggedIn = computed(() => !!userCookie.value)
     const isAdmin = computed(() => userCookie.value?.role === 'ADMIN')
 
+    // ====================
+    //       Actions
+    // ====================
+
     function setAuth(userData: AuthUser, token: string) {
         userCookie.value = userData
         tokenCookie.value = token
+    }
+
+    async function refreshToken(): Promise<boolean> {
+        try {
+            const res = await $fetch<{ accessToken: string }>('/api/auth/refresh', { method: 'POST' })
+            tokenCookie.value = res.accessToken
+            return true
+        } catch {
+            return false
+        }
+    }
+
+    async function fetchWithAuth<T>(url: string, options: Record<string, unknown> = {}): Promise<T> {
+        try {
+            return await $fetch<T>(url, options)
+        } catch (err: unknown) {
+            const e = err as { status?: number; statusCode?: number }
+            if (e?.status === 401 || e?.statusCode === 401) {
+                const ok = await refreshToken()
+                if (ok) return $fetch<T>(url, options)
+                await logout()
+                await navigateTo('/login')
+                throw err
+            }
+            throw err
+        }
     }
 
     async function logout() {
@@ -34,5 +73,5 @@ export const useAuthStore = defineStore('auth', () => {
         tokenCookie.value = null
     }
 
-    return { user, accessToken, isLoggedIn, isAdmin, setAuth, logout }
+    return { user, accessToken, isLoggedIn, isAdmin, setAuth, logout, refreshToken, fetchWithAuth }
 })

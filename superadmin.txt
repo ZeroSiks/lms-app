@@ -3,3 +3,22 @@ Superadmin Credentials
 Email:    admin@lms.com
 Password: Admin@12345
 Role:     ADMIN
+
+
+
+
+
+Student Credential
+======================
+Max Payne
+Payne@gmail.com
+Payne@12345
+
+
+
+Instructor Credentials
+=========================
+Mohamed Jhon
+Mohamed@gmail.com
+Mohamed@12345
+

@@ -31,21 +31,22 @@ model Assignment {
 }
 
 model Course {
-  id             Int            @id @default(autoincrement())
+  id             Int             @id @default(autoincrement())
   title          String
   description    String
   thumbnailUrl   String?
-  code           String         @unique
-  startDate      DateTime
-  endDate        DateTime
-  isPublished    Boolean        @default(false)
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime
-  instructorId   Int
-  categoryId     Int
+  code           String          @unique
+  duration       String?
+  startDate      DateTime?
+  endDate        DateTime?
+  isPublished    Boolean         @default(false)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  instructorId   Int?
+  categoryId     Int?
   Announcement   Announcement[]
-  CourseCategory CourseCategory @relation(fields: [categoryId], references: [id])
-  User           User           @relation(fields: [instructorId], references: [id])
+  CourseCategory CourseCategory? @relation(fields: [categoryId], references: [id])
+  User           User?           @relation(fields: [instructorId], references: [id])
   Enrollment     Enrollment[]
   Module         Module[]
 }
@@ -60,7 +61,7 @@ model Enrollment {
   id         Int              @id @default(autoincrement())
   userId     Int
   courseId   Int
-  status     EnrollmentStatus @default(ACTIVE)
+  status     EnrollmentStatus @default(PENDING)
   enrolledAt DateTime         @default(now())
   Course     Course           @relation(fields: [courseId], references: [id])
   User       User             @relation(fields: [userId], references: [id])
@@ -99,8 +100,21 @@ model Message {
   createdAt                     DateTime @default(now())
   senderId                      Int
   receiverId                    Int
+  read                          Boolean  @default(false)
   User_Message_receiverIdToUser User     @relation("Message_receiverIdToUser", fields: [receiverId], references: [id])
   User_Message_senderIdToUser   User     @relation("Message_senderIdToUser", fields: [senderId], references: [id])
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  title     String
+  message   String
+  type      String
+  read      Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Module {
@@ -146,6 +160,7 @@ model User {
   firstName                        String
   lastName                         String
   role                             Role           @default(STUDENT)
+  status                           UserStatus     @default(PENDING)
   avatarUrl                        String?
   bio                              String?
   refreshToken                     String?
@@ -157,6 +172,7 @@ model User {
   LessonProgress                   LessonProgress[]
   Message_Message_receiverIdToUser Message[]      @relation("Message_receiverIdToUser")
   Message_Message_senderIdToUser   Message[]      @relation("Message_senderIdToUser")
+  Notification                     Notification[]
   Submission                       Submission[]
 }
 
@@ -167,7 +183,9 @@ enum AssignmentStatus {
 }
 
 enum EnrollmentStatus {
+  PENDING
   ACTIVE
+  REJECTED
   COMPLETED
   DROPPED
 }
@@ -176,6 +194,12 @@ enum Role {
   ADMIN
   INSTRUCTOR
   STUDENT
+}
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+  REJECTED
 }
 
 enum SubmissionStatus {
