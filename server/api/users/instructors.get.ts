@@ -1,30 +1,24 @@
 import { prisma } from '@@/lib/prisma'
-import { verifyAccessToken } from '@@/server/utils/jwt'
+import { useAuth } from '@@/server/utils/auth'
 
 export default defineEventHandler(async (event) => {
-    const token = getHeader(event, 'authorization')?.replace('Bearer ', '')
-    if (!token) {
-        throw createError({ statusCode: 401, message: 'Unauthorized' })
-    }
+  useAuth(event, 'ADMIN')
 
-    const payload = verifyAccessToken(token)
-    if (payload.role !== 'ADMIN') {
-        throw createError({ statusCode: 403, message: 'Forbidden' })
-    }
+  const instructors = await prisma.user.findMany({
+    where: { role: 'INSTRUCTOR' },
+    select: {
+      id: true,
+      email: true,
+      firstName: true,
+      lastName: true,
+      avatarUrl: true,
+      bio: true,
+      isApproved: true,
+      createdAt: true,
+      _count: { select: { Course: true } },
+    },
+    orderBy: { createdAt: 'desc' },
+  })
 
-    const instructors = await prisma.user.findMany({
-        where: { role: 'INSTRUCTOR' },
-        select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            avatarUrl: true,
-            bio: true,
-            createdAt: true,
-        },
-        orderBy: { createdAt: 'desc' },
-    })
-
-    return { instructors }
+  return { instructors }
 })
