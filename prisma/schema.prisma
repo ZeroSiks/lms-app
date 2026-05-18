@@ -181,6 +181,7 @@ model User {
   Notification                     Notification[]
   Submission                       Submission[]
   UserStreak                       UserStreak?
+
 }
 
 // ─── New Models ───────────────────────────────────────────────────────────────
@@ -196,7 +197,10 @@ model ActivityLog {
   Course      Course?         @relation(fields: [courseId], references: [id])
   Module      Module?         @relation(fields: [moduleId], references: [id])
   User        User            @relation(fields: [userId], references: [id])
+  @@index([userId])
+  @@index([createdAt])
 }
+
 
 model UserStreak {
   id             Int      @id @default(autoincrement())
@@ -216,6 +220,7 @@ enum ActivityLogType {
   RECEIVED_FEEDBACK
   COMPLETED_LESSON
   ENROLLED_COURSE
+  ACCOUNT_APPROVED
 }
 
 enum AssignmentStatus {
