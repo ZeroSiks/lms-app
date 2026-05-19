@@ -39,7 +39,7 @@ export default defineEventHandler(async (event) => {
                 where: { id: existing.id },
                 data: { status: 'PENDING' as any, enrolledAt: new Date() },
             })
-            return { ok: true, reapplied: true }
+            return { ok: true, id: existing.id, status: 'PENDING', reapplied: true }
         }
     }
 
@@ -47,5 +47,9 @@ export default defineEventHandler(async (event) => {
         data: { userId: payload.userId, courseId, status: 'PENDING' as any },
     })
 
-    return { ok: true }
+    const created = await prisma.enrollment.findUnique({
+        where: { userId_courseId: { userId: payload.userId, courseId } },
+    })
+
+    return { ok: true, id: created!.id, status: 'PENDING' }
 })

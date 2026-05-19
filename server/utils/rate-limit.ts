@@ -15,6 +15,8 @@ setInterval(() => {
 }, 60_000)
 
 export function rateLimit(event: H3Event, maxRequests: number = 5, windowMs: number = 60_000): void {
+  if (process.env.NODE_ENV !== 'production') return
+
   const ip = getRequestIP(event) ?? 'unknown'
   const key = `${ip}:${event.path}`
 
