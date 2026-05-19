@@ -1,8 +1,8 @@
 import { prisma } from '@@/lib/prisma'
-import { useAuth } from '@@/server/utils/auth'
+import { requireAuth } from '@@/server/utils/auth'
 
 export default defineEventHandler(async (event) => {
-  const payload = useAuth(event)
+  const payload = await requireAuth(event)
 
   const logs = await prisma.activityLog.findMany({
     where: { userId: payload.userId },

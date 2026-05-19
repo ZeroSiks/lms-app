@@ -1,13 +1,13 @@
 import { z } from 'zod'
 import { prisma } from '@@/lib/prisma'
-import { useAuth } from '@@/server/utils/auth'
+import { requireAdmin } from '@@/server/utils/auth'
 
 const paramsSchema = z.object({
   id: z.coerce.number().int().positive('Invalid user ID'),
 })
 
 export default defineEventHandler(async (event) => {
-  useAuth(event, 'ADMIN')
+  await requireAdmin(event)
 
   const params = paramsSchema.safeParse({ id: getRouterParam(event, 'id') })
   if (!params.success) {

@@ -1,13 +1,13 @@
 import { z } from 'zod'
 import { prisma } from '@@/lib/prisma'
-import { useAuth } from '@@/server/utils/auth'
+import { requireAdmin } from '@@/server/utils/auth'
 
 const paramsSchema = z.object({
   id: z.coerce.number().int().positive('Invalid user ID'),
 })
 
 export default defineEventHandler(async (event) => {
-  const admin = useAuth(event, 'ADMIN')
+  const admin = await requireAdmin(event)
 
   const params = paramsSchema.safeParse({ id: getRouterParam(event, 'id') })
   if (!params.success) {
@@ -23,14 +23,16 @@ export default defineEventHandler(async (event) => {
 
   const updated = await prisma.user.update({
     where: { id },
-    data: { isApproved: true },
-    select: { id: true, email: true, firstName: true, lastName: true, role: true, isApproved: true },
+    data: { status: 'ACTIVE' },
+    select: { id: true, email: true, firstName: true, lastName: true, role: true, status: true },
   })
 
   await prisma.notification.create({
     data: {
       userId: id,
-      title: 'Your account has been approved. Welcome aboard!',
+      title: 'Account Approved',
+      message: 'Your account has been approved. Welcome aboard!',
+      type: 'SYSTEM',
     },
   })
 

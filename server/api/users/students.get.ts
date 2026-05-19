@@ -1,8 +1,8 @@
 import { prisma } from '@@/lib/prisma'
-import { useAuth } from '@@/server/utils/auth'
+import { requireAdmin } from '@@/server/utils/auth'
 
 export default defineEventHandler(async (event) => {
-  useAuth(event, 'ADMIN')
+  await requireAdmin(event)
 
   const students = await prisma.user.findMany({
     where: { role: 'STUDENT' },
@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
       firstName: true,
       lastName: true,
       avatarUrl: true,
-      isApproved: true,
+      status: true,
       createdAt: true,
       _count: { select: { Enrollment: true } },
     },
