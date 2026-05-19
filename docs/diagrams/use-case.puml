@@ -1,0 +1,122 @@
+@startuml use-case
+title Lumify LMS - Use Case Diagram
+
+left to right direction
+skinparam packageStyle rectangle
+
+actor Guest
+actor Student
+actor Instructor
+actor Admin
+
+rectangle "Authentication" {
+  usecase "Register Account" as UC1
+  usecase "Login" as UC2
+  usecase "Forgot Password" as UC3
+  usecase "Reset Password" as UC4
+}
+
+rectangle "Course Management" {
+  usecase "Browse Course Catalog" as UC5
+  usecase "View Course Details" as UC6
+  usecase "Enroll in Course" as UC7
+  usecase "Create Course" as UC8
+  usecase "Edit Course" as UC9
+  usecase "Delete Course" as UC10
+  usecase "Assign Instructor" as UC11
+  usecase "Publish / Unpublish Course" as UC12
+}
+
+rectangle "Learning" {
+  usecase "View Lesson" as UC13
+  usecase "Mark Lesson Complete" as UC14
+  usecase "Track Learning Progress" as UC15
+}
+
+rectangle "Assignments" {
+  usecase "Submit Assignment" as UC16
+  usecase "View Submissions" as UC17
+  usecase "Grade Submission" as UC18
+  usecase "View Grade / Feedback" as UC19
+}
+
+rectangle "Content Management" {
+  usecase "Manage Modules" as UC20
+  usecase "Manage Lessons" as UC21
+  usecase "Manage Assignments" as UC22
+}
+
+rectangle "Communication" {
+  usecase "Send Message" as UC23
+  usecase "View Conversations" as UC24
+  usecase "View Notifications" as UC25
+}
+
+rectangle "Administration" {
+  usecase "Approve / Reject Users" as UC26
+  usecase "Approve / Reject Enrollments" as UC27
+  usecase "Manage User Accounts" as UC28
+  usecase "View System Activity" as UC29
+  usecase "View System Statistics" as UC30
+}
+
+rectangle "Profile" {
+  usecase "Edit Profile" as UC31
+  usecase "Change Password" as UC32
+}
+
+' Guest use cases
+Guest --> UC1
+Guest --> UC2
+Guest --> UC5
+Guest --> UC3
+
+' Student use cases
+Student --> UC2
+Student --> UC3
+Student --> UC4
+Student --> UC5
+Student --> UC6
+Student --> UC7
+Student --> UC13
+Student --> UC14
+Student --> UC15
+Student --> UC16
+Student --> UC19
+Student --> UC23
+Student --> UC24
+Student --> UC25
+Student --> UC31
+Student --> UC32
+
+' Instructor use cases
+Instructor --> UC2
+Instructor --> UC12
+Instructor --> UC17
+Instructor --> UC18
+Instructor --> UC20
+Instructor --> UC21
+Instructor --> UC22
+Instructor --> UC23
+Instructor --> UC24
+Instructor --> UC25
+Instructor --> UC31
+Instructor --> UC32
+
+' Admin use cases
+Admin --> UC2
+Admin --> UC8
+Admin --> UC9
+Admin --> UC10
+Admin --> UC11
+Admin --> UC26
+Admin --> UC27
+Admin --> UC28
+Admin --> UC29
+Admin --> UC30
+
+' Relationships
+UC3 ..> UC4 : includes
+UC7 ..> UC27 : <<requires approval>>
+
+@enduml
