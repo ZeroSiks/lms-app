@@ -1,58 +1,70 @@
 import { z } from 'zod'
 import { prisma } from '@@/lib/prisma'
 
+// ====================
+//   Validation Schema
+// ====================
+
 const schema = z.object({
-    firstName: z.string().min(1, 'First name is required'),
-    lastName: z.string().min(1, 'Last name is required'),
+    firstName: z.string().min(1, 'First name is required').max(100),
+    lastName: z.string().min(1, 'Last name is required').max(100),
     email: z.string().email('Invalid email address'),
     password: z.string().min(8, 'Password must be at least 8 characters'),
     role: z.enum(['STUDENT', 'INSTRUCTOR']),
 })
 
 export default defineEventHandler(async (event) => {
+    rateLimit(event, 3, 60_000)
     const body = await readBody(event)
 
     const result = schema.safeParse(body)
     if (!result.success) {
         throw createError({
             statusCode: 400,
-            message: result.error.errors[0]?.message ?? 'Invalid input',
+            message: result.error.issues[0]?.message ?? 'Invalid input',
         })
     }
 
     const { firstName, lastName, email, password, role } = result.data
+    const safeFirstName = stripHtml(firstName)
+    const safeLastName = stripHtml(lastName)
+
+    // ====================
+    //   Duplicate Check
+    // ====================
 
     const existing = await prisma.user.findUnique({ where: { email } })
+
     if (existing) {
-        throw createError({
-            statusCode: 409,
-            message: 'An account with this email already exists.',
+        if ((existing.status as string) === 'PENDING') {
+            throw createError({
+                statusCode: 409,
+                message: 'A registration request for this email is already pending admin approval.',
+            })
+        }
+        if ((existing.status as string) === 'ACTIVE') {
+            throw createError({
+                statusCode: 409,
+                message: 'An account with this email already exists.',
+            })
+        }
+        // REJECTED — allow re-application by updating the existing record
+        const passwordHash = await hashPassword(password)
+        await prisma.user.update({
+            where: { email },
+            data: { firstName: safeFirstName, lastName: safeLastName, passwordHash, role, status: 'PENDING' },
         })
+        return { pending: true }
     }
 
+    // ====================
+    //    Create Account
+    // ====================
+
     const passwordHash = await hashPassword(password)
-
-    const user = await prisma.user.create({
-        data: { firstName, lastName, email, passwordHash, role },
-        select: { id: true, email: true, firstName: true, lastName: true, role: true },
+    await prisma.user.create({
+        data: { firstName: safeFirstName, lastName: safeLastName, email, passwordHash, role, status: 'PENDING' },
     })
 
-    const payload = { userId: user.id, email: user.email, role: user.role }
-    const accessToken = generateAccessToken(payload)
-    const refreshToken = generateRefreshToken(payload)
-
-    await prisma.user.update({
-        where: { id: user.id },
-        data: { refreshToken: await hashPassword(refreshToken) },
-    })
-
-    setCookie(event, 'refresh_token', refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 60 * 60 * 24 * 7,
-        path: '/',
-    })
-
-    return { accessToken, user }
+    return { pending: true }
 })

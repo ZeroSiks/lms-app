@@ -1,5 +1,5 @@
 <template>
-    <div class="min-h-screen flex">
+    <div class="min-h-screen flex" role="main">
 
         <!-- Left panel — branding (desktop only) -->
         <div
