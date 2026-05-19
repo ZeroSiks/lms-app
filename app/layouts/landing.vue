@@ -1,7 +1,7 @@
 <template>
     <div class="min-h-screen bg-white">
         <CommonLoadingScreen />
-        <nav class="bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
+        <nav class="bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm" role="navigation" aria-label="Main">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between h-16 items-center">
                     <NuxtLink to="/" class="text-xl font-extrabold text-[#020B2D] tracking-tight">
@@ -30,7 +30,7 @@
                 </div>
             </div>
         </nav>
-        <main>
+        <main role="main">
             <slot />
         </main>
     </div>

@@ -1,10 +1,13 @@
 <template>
     <div class="flex h-screen bg-[#f0f4ff] overflow-hidden">
+        <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2 focus:bg-[#0000ff] focus:text-white focus:rounded-lg">
+            Skip to content
+        </a>
 
         <!-- ====================
                   Sidebar
              ==================== -->
-        <aside class="w-64 bg-[#020B2D] flex flex-col flex-shrink-0">
+        <aside class="w-64 bg-[#020B2D] flex flex-col flex-shrink-0" role="complementary" aria-label="Sidebar">
 
             <!-- Logo -->
             <div class="h-16 flex items-center px-5 border-b border-white/10 flex-shrink-0">
@@ -24,12 +27,13 @@
             </div>
 
             <!-- Navigation -->
-            <nav class="flex-1 px-3 py-2 space-y-0.5 overflow-y-auto">
+            <nav class="flex-1 px-3 py-2 space-y-0.5 overflow-y-auto" role="navigation" aria-label="Main navigation">
                 <template v-if="isAdmin">
                     <NuxtLink
                         v-for="item in adminNav"
                         :key="item.to"
                         :to="item.to"
+                        :aria-current="$route.path === item.to ? 'page' : undefined"
                         :class="[
                             'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150',
                             $route.path === item.to
@@ -50,6 +54,7 @@
                         v-for="item in userNav"
                         :key="item.to"
                         :to="item.to"
+                        :aria-current="($route.path === item.to || (item.to !== '/dashboard' && $route.path.startsWith(item.to))) ? 'page' : undefined"
                         :class="[
                             'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150',
                             ($route.path === item.to || (item.to !== '/dashboard' && $route.path.startsWith(item.to)))
@@ -77,6 +82,7 @@
                 </NuxtLink>
                 <button
                     @click="handleLogout"
+                    aria-label="Sign out"
                     class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-white/50 hover:text-white hover:bg-white/8 transition-colors text-sm font-medium"
                 >
                     <LogOut class="w-4 h-4" />
@@ -100,6 +106,7 @@
                         <input
                             type="text"
                             placeholder="Search..."
+                            aria-label="Search"
                             class="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0000ff]/20 focus:border-[#0000ff]"
                         />
                     </div>
@@ -114,6 +121,7 @@
                         <button
                             @click.stop="toggleNotifs"
                             class="relative w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+                            aria-label="Notifications"
                         >
                             <Bell class="w-5 h-5 text-gray-600" />
                             <span v-if="unreadCount > 0" class="absolute top-1.5 right-1.5 w-4 h-4 bg-[#0000ff] rounded-full text-white text-[10px] font-bold flex items-center justify-center leading-none">
@@ -175,7 +183,7 @@
             </header>
 
             <!-- Page content -->
-            <main class="flex-1 overflow-y-auto">
+            <main id="main-content" class="flex-1 overflow-y-auto" role="main">
                 <slot />
             </main>
         </div>
