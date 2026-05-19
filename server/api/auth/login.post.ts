@@ -11,6 +11,7 @@ const schema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
+    rateLimit(event, 5, 60_000)
     const body = await readBody(event)
 
     const result = schema.safeParse(body)

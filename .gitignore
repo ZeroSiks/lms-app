@@ -26,5 +26,6 @@ logs
 /app/generated/prisma
 
 /lib/generated/prisma
-
 /generated/prisma
+
+superadmin.txt

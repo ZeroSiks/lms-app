@@ -26,7 +26,7 @@ export default defineEventHandler(async (event) => {
     const sender = await prisma.user.findUnique({ where: { id: payload.userId }, select: { firstName: true, lastName: true } })
 
     const message = await prisma.message.create({
-        data: { senderId: payload.userId, receiverId: Number(receiverId), content: content.trim() },
+        data: { senderId: payload.userId, receiverId: Number(receiverId), content: stripHtml(content.trim()).slice(0, 5000) },
         select: { id: true, content: true, senderId: true, receiverId: true, createdAt: true, read: true },
     })
 

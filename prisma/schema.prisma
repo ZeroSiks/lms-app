@@ -164,6 +164,8 @@ model User {
   avatarUrl                        String?
   bio                              String?
   refreshToken                     String?
+  passwordResetToken                String?
+  passwordResetExpires              DateTime?
   createdAt                        DateTime       @default(now())
   updatedAt                        DateTime       @updatedAt
   Announcement                     Announcement[]

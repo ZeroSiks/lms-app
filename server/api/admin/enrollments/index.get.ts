@@ -1,6 +1,8 @@
 import { prisma } from '@@/lib/prisma'
+import { requireAdmin } from '@@/server/utils/auth'
 
-export default defineEventHandler(async () => {
+export default defineEventHandler(async (event) => {
+    await requireAdmin(event)
     return prisma.enrollment.findMany({
         where: { status: 'PENDING' as any },
         include: {

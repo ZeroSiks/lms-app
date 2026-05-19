@@ -1,6 +1,8 @@
 import { prisma } from '@@/lib/prisma'
+import { requireAdmin } from '@@/server/utils/auth'
 
 export default defineEventHandler(async (event) => {
+    await requireAdmin(event)
     const query = getQuery(event)
     const search = (query.search as string | undefined)?.trim() ?? ''
 

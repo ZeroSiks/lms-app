@@ -30,9 +30,9 @@
                     <label for="password" class="block text-sm font-medium text-gray-700">
                         Password
                     </label>
-                    <a href="#" class="text-xs text-[#0000ff] hover:text-[#0000cc] transition-colors">
+                    <NuxtLink to="/forgot-password" class="text-xs text-[#0000ff] hover:text-[#0000cc] transition-colors">
                         Forgot password?
-                    </a>
+                    </NuxtLink>
                 </div>
                 <input
                     id="password"

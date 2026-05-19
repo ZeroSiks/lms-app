@@ -13,7 +13,29 @@ const ALLOWED_TYPES = [
     'image/jpeg',
     'image/png',
 ]
-const MAX_SIZE = 10 * 1024 * 1024 // 10MB
+
+const MAGIC_BYTES: Record<string, number[]> = {
+    'application/pdf': [0x25, 0x50, 0x44, 0x46],
+    'image/jpeg': [0xFF, 0xD8, 0xFF],
+    'image/png': [0x89, 0x50, 0x4E, 0x47],
+}
+
+const ALLOWED_EXTENSIONS = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'txt', 'jpg', 'jpeg', 'png']
+
+const MAX_SIZE = 10 * 1024 * 1024
+
+function sanitizeFilename(name: string): string {
+    return name.replace(/[^a-zA-Z0-9._-]/g, '_')
+}
+
+function validateMagicBytes(data: Buffer, mimeType: string): boolean {
+    const expected = MAGIC_BYTES[mimeType]
+    if (!expected) return true
+    for (let i = 0; i < expected.length; i++) {
+        if (data[i] !== expected[i]) return false
+    }
+    return true
+}
 
 export default defineEventHandler(async (event) => {
     const token = getCookie(event, 'lms_token')
@@ -73,9 +95,14 @@ export default defineEventHandler(async (event) => {
             if (filePart.data.length > MAX_SIZE) {
                 throw createError({ statusCode: 400, message: 'File too large. Maximum size is 10MB.' })
             }
+            if (!validateMagicBytes(filePart.data, mimeType)) {
+                throw createError({ statusCode: 400, message: 'File content does not match its claimed type.' })
+            }
+            const rawName = sanitizeFilename(filePart.filename ?? 'file')
+            let ext = rawName.split('.').pop()?.toLowerCase() ?? 'bin'
+            if (!ALLOWED_EXTENSIONS.includes(ext)) ext = 'bin'
             const uploadsDir = join(process.cwd(), 'public', 'uploads')
             mkdirSync(uploadsDir, { recursive: true })
-            const ext = filePart.filename?.split('.').pop()?.toLowerCase() ?? 'bin'
             const filename = `sub-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
             writeFileSync(join(uploadsDir, filename), filePart.data)
             fileUrl = `/uploads/${filename}`

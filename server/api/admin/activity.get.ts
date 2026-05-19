@@ -1,6 +1,8 @@
 import { prisma } from '@@/lib/prisma'
+import { requireAdmin } from '@@/server/utils/auth'
 
-export default defineEventHandler(async () => {
+export default defineEventHandler(async (event) => {
+    await requireAdmin(event)
     const [recentUsers, recentEnrollments, recentCourses] = await Promise.all([
         prisma.user.findMany({
             where: { role: { in: ['STUDENT', 'INSTRUCTOR'] as any[] } },

@@ -6,14 +6,15 @@ import { prisma } from '@@/lib/prisma'
 // ====================
 
 const schema = z.object({
-    firstName: z.string().min(1, 'First name is required'),
-    lastName: z.string().min(1, 'Last name is required'),
+    firstName: z.string().min(1, 'First name is required').max(100),
+    lastName: z.string().min(1, 'Last name is required').max(100),
     email: z.string().email('Invalid email address'),
     password: z.string().min(8, 'Password must be at least 8 characters'),
     role: z.enum(['STUDENT', 'INSTRUCTOR']),
 })
 
 export default defineEventHandler(async (event) => {
+    rateLimit(event, 3, 60_000)
     const body = await readBody(event)
 
     const result = schema.safeParse(body)
@@ -25,6 +26,8 @@ export default defineEventHandler(async (event) => {
     }
 
     const { firstName, lastName, email, password, role } = result.data
+    const safeFirstName = stripHtml(firstName)
+    const safeLastName = stripHtml(lastName)
 
     // ====================
     //   Duplicate Check
@@ -33,13 +36,13 @@ export default defineEventHandler(async (event) => {
     const existing = await prisma.user.findUnique({ where: { email } })
 
     if (existing) {
-        if (existing.status === 'PENDING') {
+        if ((existing.status as string) === 'PENDING') {
             throw createError({
                 statusCode: 409,
                 message: 'A registration request for this email is already pending admin approval.',
             })
         }
-        if (existing.status === 'ACTIVE') {
+        if ((existing.status as string) === 'ACTIVE') {
             throw createError({
                 statusCode: 409,
                 message: 'An account with this email already exists.',
@@ -49,7 +52,7 @@ export default defineEventHandler(async (event) => {
         const passwordHash = await hashPassword(password)
         await prisma.user.update({
             where: { email },
-            data: { firstName, lastName, passwordHash, role, status: 'PENDING' },
+            data: { firstName: safeFirstName, lastName: safeLastName, passwordHash, role, status: 'PENDING' },
         })
         return { pending: true }
     }
@@ -60,7 +63,7 @@ export default defineEventHandler(async (event) => {
 
     const passwordHash = await hashPassword(password)
     await prisma.user.create({
-        data: { firstName, lastName, email, passwordHash, role, status: 'PENDING' },
+        data: { firstName: safeFirstName, lastName: safeLastName, email, passwordHash, role, status: 'PENDING' },
     })
 
     return { pending: true }
