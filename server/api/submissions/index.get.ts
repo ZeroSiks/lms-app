@@ -1,7 +1,7 @@
 import { prisma } from '@@/lib/prisma'
 
 export default defineEventHandler(async (event) => {
-    const user = requireAuth(event)
+    const user = getUser(event)
 
     if (user.role === 'STUDENT') {
         const submissions = await prisma.submission.findMany({

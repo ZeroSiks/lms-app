@@ -1,7 +1,7 @@
 import { prisma } from '@@/lib/prisma'
 
 export default defineEventHandler(async (event) => {
-    const user = requireAuth(event)
+    const user = getUser(event)
     const id = parseInt(getRouterParam(event, 'id') ?? '')
     if (isNaN(id)) throw createError({ statusCode: 400, message: 'Invalid assignment id' })
 

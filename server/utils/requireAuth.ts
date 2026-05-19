@@ -1,7 +1,7 @@
 import { verifyAccessToken } from './jwt'
 import type { JwtPayload } from './jwt'
 
-export function requireAuth(event: Parameters<typeof getHeader>[0]): JwtPayload {
+export function getUser(event: Parameters<typeof getHeader>[0]): JwtPayload {
     const authHeader = getHeader(event, 'authorization')
     let token: string | undefined
 
@@ -18,13 +18,13 @@ export function requireAuth(event: Parameters<typeof getHeader>[0]): JwtPayload 
     try {
         return verifyAccessToken(token)
     } catch (err) {
-        console.error('[requireAuth] token verification failed:', err)
+        console.error('[getUser] token verification failed:', err)
         throw createError({ statusCode: 401, message: 'Invalid or expired token' })
     }
 }
 
 export function requireRole(event: Parameters<typeof getHeader>[0], ...roles: JwtPayload['role'][]): JwtPayload {
-    const payload = requireAuth(event)
+    const payload = getUser(event)
     if (!roles.includes(payload.role)) {
         throw createError({ statusCode: 403, message: 'Insufficient permissions' })
     }

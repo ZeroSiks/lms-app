@@ -2,7 +2,7 @@ import { Prisma } from '@prisma/client'
 import { prisma } from '@@/lib/prisma'
 
 export default defineEventHandler(async (event) => {
-    const user = requireAuth(event)
+    const user = getUser(event)
     const query = getQuery(event)
     const courseId = query.courseId ? parseInt(query.courseId as string) : undefined
     const take = Math.min(parseInt((query.take as string) ?? '100'), 200)

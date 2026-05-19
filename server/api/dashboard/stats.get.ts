@@ -19,7 +19,7 @@ function computeStreak(completedDates: Date[], now: Date): number {
 }
 
 export default defineEventHandler(async (event) => {
-    const user = requireAuth(event)
+    const user = getUser(event)
     const now = new Date()
 
     if (user.role === 'STUDENT') {
