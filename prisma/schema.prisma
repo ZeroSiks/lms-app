@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider   = "prisma-client-js"
   engineType = "library"
 }
 
@@ -35,6 +35,7 @@ model Course {
   title          String
   description    String
   thumbnailUrl   String?
+  color          String?
   code           String          @unique
   duration       String?
   startDate      DateTime?
@@ -44,6 +45,7 @@ model Course {
   updatedAt      DateTime        @updatedAt
   instructorId   Int?
   categoryId     Int?
+  ActivityLog    ActivityLog[]
   Announcement   Announcement[]
   CourseCategory CourseCategory? @relation(fields: [categoryId], references: [id])
   User           User?           @relation(fields: [instructorId], references: [id])
@@ -118,14 +120,15 @@ model Notification {
 }
 
 model Module {
-  id          Int          @id @default(autoincrement())
+  id          Int           @id @default(autoincrement())
   title       String
   description String?
   order       Int
   courseId    Int
+  ActivityLog ActivityLog[]
   Assignment  Assignment[]
   Lesson      Lesson[]
-  Course      Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  Course      Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
 }
 
 model Resource {
@@ -154,8 +157,8 @@ model Submission {
 }
 
 model User {
-  id                               Int            @id @default(autoincrement())
-  email                            String         @unique
+  id                               Int              @id @default(autoincrement())
+  email                            String           @unique
   passwordHash                     String
   firstName                        String
   lastName                         String
@@ -168,6 +171,7 @@ model User {
   passwordResetExpires              DateTime?
   createdAt                        DateTime       @default(now())
   updatedAt                        DateTime       @updatedAt
+  ActivityLog                      ActivityLog[]
   Announcement                     Announcement[]
   Course                           Course[]
   Enrollment                       Enrollment[]
@@ -176,6 +180,47 @@ model User {
   Message_Message_senderIdToUser   Message[]      @relation("Message_senderIdToUser")
   Notification                     Notification[]
   Submission                       Submission[]
+  UserStreak                       UserStreak?
+
+}
+
+// ─── New Models ───────────────────────────────────────────────────────────────
+
+model ActivityLog {
+  id          Int             @id @default(autoincrement())
+  userId      Int
+  type        ActivityLogType
+  description String
+  createdAt   DateTime        @default(now())
+  courseId    Int?
+  moduleId    Int?
+  Course      Course?         @relation(fields: [courseId], references: [id])
+  Module      Module?         @relation(fields: [moduleId], references: [id])
+  User        User            @relation(fields: [userId], references: [id])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+
+model UserStreak {
+  id             Int      @id @default(autoincrement())
+  userId         Int      @unique
+  currentStreak  Int      @default(0)
+  longestStreak  Int      @default(0)
+  lastActiveDate DateTime @db.Date
+  User           User     @relation(fields: [userId], references: [id])
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum ActivityLogType {
+  COMPLETED_MODULE
+  SUBMITTED_ASSIGNMENT
+  STARTED_COURSE
+  RECEIVED_FEEDBACK
+  COMPLETED_LESSON
+  ENROLLED_COURSE
+  ACCOUNT_APPROVED
 }
 
 enum AssignmentStatus {
