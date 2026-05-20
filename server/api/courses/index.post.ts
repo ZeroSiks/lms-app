@@ -17,7 +17,10 @@ export default defineEventHandler(async (event) => {
   const validated = createCourseSchema.parse(body)
 
   const course = await prisma.course.create({
-    data: validated,
+    data: {
+      ...validated,
+      description: validated.description ?? '',
+    },
     include: {
       User: {
         select: { id: true, firstName: true, lastName: true }
