@@ -1,5 +1,0 @@
-{
-  "lint-staged": {
-    "*.{ts,vue}": ["bunx nuxt typecheck --noEmit 2>/dev/null || true"]
-  }
-}

@@ -49,6 +49,7 @@ jobs:
           NUXT_PUBLIC_BASE_URL: http://localhost:3000
         run: |
           bunx prisma migrate deploy
+          bunx prisma generate
           bunx tsx prisma/seed.ts
           bun run test || true
 

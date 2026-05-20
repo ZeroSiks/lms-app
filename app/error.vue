@@ -36,4 +36,10 @@ const props = defineProps<{
 }>()
 
 const handleError = () => clearError({ redirect: '/' })
+
+useHead({
+  bodyAttrs: {
+    style: 'background-color: #f9fafb'
+  }
+})
 </script>

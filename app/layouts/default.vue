@@ -81,4 +81,10 @@ const user = ref<AuthUser | null>(null)
 const logout = () => {
     // TODO: Implement logout
 }
+
+useHead({
+  bodyAttrs: {
+    style: 'background-color: #f9fafb'
+  }
+})
 </script>

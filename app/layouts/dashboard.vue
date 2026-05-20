@@ -362,4 +362,10 @@ const handleLogout = async () => {
     await auth.logout()
     router.push('/login')
 }
+
+useHead({
+  bodyAttrs: {
+    style: 'background-color: #f0f4ff'
+  }
+})
 </script>
