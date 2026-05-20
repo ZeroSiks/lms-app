@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
 
     const result = schema.safeParse(body)
     if (!result.success) {
-        throw createError({ statusCode: 400, message: result.error.errors[0]?.message ?? 'Invalid input' })
+        throw createError({ statusCode: 400, message: result.error.issues[0]?.message ?? 'Invalid input' })
     }
 
     const { moduleId, title, description, dueDate, maxPoints } = result.data

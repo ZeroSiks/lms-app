@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 401, message: 'Invalid or expired token' })
   }
 
-  const id = parseInt(getRouterParam(event, 'id') as string)
+  const id = parseInt(getRouterParam(event, 'id') ?? '')
   if (isNaN(id)) throw createError({ statusCode: 400, message: 'Invalid course ID' })
 
   const course = await prisma.course.findUnique({ where: { id } })

@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { $fetch as ofetch } from 'ofetch'
 
 interface AuthUser {
     id: number
@@ -43,7 +44,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     async function refreshToken(): Promise<boolean> {
         try {
-            const res = await $fetch<{ accessToken: string }>('/api/auth/refresh', { method: 'POST' })
+            const res = await ofetch<{ accessToken: string }>('/api/auth/refresh', { method: 'POST' })
             tokenCookie.value = res.accessToken
             return true
         } catch {
@@ -53,12 +54,12 @@ export const useAuthStore = defineStore('auth', () => {
 
     async function fetchWithAuth<T>(url: string, options: Record<string, unknown> = {}): Promise<T> {
         try {
-            return await $fetch<T>(url, options)
+            return await ofetch<T>(url, options)
         } catch (err: unknown) {
             const e = err as { status?: number; statusCode?: number }
             if (e?.status === 401 || e?.statusCode === 401) {
                 const ok = await refreshToken()
-                if (ok) return $fetch<T>(url, options)
+                if (ok) return ofetch<T>(url, options)
                 await logout()
                 await navigateTo('/login')
                 throw err
@@ -68,7 +69,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     async function logout() {
-        await $fetch('/api/auth/logout', { method: 'POST' }).catch(() => {})
+        await ofetch('/api/auth/logout', { method: 'POST' }).catch(() => {})
         userCookie.value = null
         tokenCookie.value = null
     }
