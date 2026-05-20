@@ -196,7 +196,7 @@ import {
     Bell, Search, LogOut, Settings,
     LayoutDashboard, BookOpen, Calendar, ClipboardList, MessageCircle, BarChart2,
     UserCheck, Users, BookMarked, Activity, GraduationCap, BookCopy,
-    Star, Mail,
+    Star, Mail, Megaphone,
 } from 'lucide-vue-next'
 
 // ====================
@@ -332,6 +332,7 @@ const adminNav = computed(() => [
     { to: '/admin/students', label: 'Students', icon: Users, badge: null },
     { to: '/admin/instructors', label: 'Instructors', icon: GraduationCap, badge: null },
     { to: '/admin/courses', label: 'Courses', icon: BookMarked, badge: null },
+    { to: '/admin/announcements', label: 'Announcements', icon: Megaphone, badge: null },
     { to: '/admin/activity', label: 'Activity Log', icon: Activity, badge: null },
 ])
 
