@@ -150,7 +150,7 @@ model Submission {
   status       SubmissionStatus @default(PENDING)
   userId       Int
   assignmentId Int
-  Assignment   Assignment       @relation(fields: [assignmentId], references: [id])
+  Assignment   Assignment       @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
   User         User             @relation(fields: [userId], references: [id])
 
   @@unique([userId, assignmentId])
