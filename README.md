@@ -1,545 +1,211 @@
-# LMS Project Developer Guide
+# Lumify — Learning Management System
 
-Welcome to the LMS (Learning Management System) project! This guide will help you set up your development environment and understand the project conventions.
+**Learn Today. Lead Tomorrow.**
+
+A full-stack Learning Management System built as the group capstone project for **UFCF7S-30-2 — Systems Development** (2025/26). Lumify supports three user roles — Student, Instructor, and Administrator — with course delivery, assignment grading, direct messaging, and a learning streak gamification tracker.
+
+![Tech Stack](https://img.shields.io/badge/Nuxt-4.x-00DC82?logo=nuxt.js) ![Vue](https://img.shields.io/badge/Vue-3.5-4FC08D?logo=vue.js) ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript) ![Prisma](https://img.shields.io/badge/Prisma-7.x-2D3748?logo=prisma) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14+-4169E1?logo=postgresql) ![Tests](https://img.shields.io/badge/tests-129%20passed-brightgreen) ![TypeCheck](https://img.shields.io/badge/types-0%20errors-brightgreen)
 
 ---
 
 ## Table of Contents
 
-1. [Development Environment Setup](#1-development-environment-setup)
-2. [Code Style Guidelines](#2-code-style-guidelines)
-3. [Project Structure](#3-project-structure)
-4. [Coding Practices](#4-coding-practices)
-5. [Common Workflows](#5-common-workflows)
-6. [Database Guidelines](#6-database-guidelines)
-7. [API Development](#7-api-development)
+- [Features](#features)
+- [Technology Stack](#technology-stack)
+- [Project Structure](#project-structure)
+- [Quick Start](#quick-start)
+- [Default Accounts](#default-accounts)
+- [Available Scripts](#available-scripts)
+- [Documentation](#documentation)
+- [Team](#team)
 
 ---
 
-## 1. Development Environment Setup
+## Features
 
-### 1.1 Install Bun
+### For Students
+- Browse published courses by title, description, or code
+- Enrol in courses (pending admin approval)
+- Navigate modules and lessons with prev/next controls
+- Mark lessons complete — progress tracked in real-time
+- Submit assignments with text and file attachments (PDF, Word, images — 10MB limit)
+- View grades and instructor feedback
+- Track your learning streak on a 7-day calendar
 
-Bun is a fast JavaScript runtime. We'll use it instead of npm/yarn.
+### For Instructors
+- Create and manage course content: modules, lessons, and assignments
+- Publish/unpublish courses to control catalogue visibility
+- Review student submissions with full-text viewing and file downloads
+- Assign numeric grades with written feedback
+- Post course announcements that broadcast notifications to enrolled students
+- Direct-message any student in your courses
 
-```bash
-# macOS/Linux
-curl -fsSL https://bun.sh/install | bash
-
-# Windows (PowerShell)
-iwr https://bun.sh/install.ps1 | iex
-```
-
-Verify installation:
-
-```bash
-bun --version
-```
-
-### 1.2 Clone and Setup
-
-```bash
-# Clone the repository
-git clone <repository-url>
-cd lms-app
-
-# Install dependencies
-bun install
-```
-
-### 1.3 Database Setup
-
-> **Note:** If you don't have PostgreSQL installed locally, you can use this Docker setup for a quick start: [docker-compose-postgres-pgadmin](https://github.com/matschik/docker-compose-postgres-pgadmin).
-
-1. **Make sure PostgreSQL is running**
-
-   ```bash
-   # macOS
-   brew services start postgresql
-
-   # Linux
-   sudo systemctl start postgresql
-   ```
-
-2. **Create your .env file**
-
-   ```env
-   DATABASE_URL="postgresql://username:password@localhost:5432/lms_db?schema=public"
-   ```
-
-   Replace `username` and `password` with your PostgreSQL credentials.
-
-3. **Run database migrations**
-
-```bash
-bunx prisma migrate dev
-```
-
-### 1.4 Start Development Server
-
-```bash
-# Start the dev server
-bun run dev
-```
-
-The app will be available at `http://localhost:3000`
+### For Administrators
+- Approve or reject pending user registrations
+- Manage users: search, filter by role/status, deactivate accounts
+- Oversee all courses, assign instructors, delete courses
+- View system-wide statistics and pending approval counts
+- Monitor platform activity through a unified activity log
+- Post platform-wide announcements
 
 ---
 
-## 2. Code Style Guidelines
+## Technology Stack
 
-This project uses Zed's default code style settings. When using other IDEs, ensure your editor is configured to match:
-
-- **Indentation**: 2 spaces (no tabs)
-- **Trailing commas**: Yes
-- **Semicolons**: No
-- **Quotes**: Single quotes
-- **Format on save**: Enabled
-
-If your IDE supports Prettier or ESLint, the project should auto-format automatically. Otherwise, manually ensure:
-- Use 2 spaces for indentation
-- Add trailing commas where appropriate
-- No semicolons at end of statements
-- Use single quotes for strings
+| Layer | Technology |
+|---|---|
+| **Framework** | Nuxt 4 (Vue 3 Composition API) |
+| **Language** | TypeScript (strict mode) |
+| **CSS** | Tailwind CSS v4 + Nuxt UI 4.5 |
+| **Database** | PostgreSQL 14+ |
+| **ORM** | Prisma 7 with PostgreSQL adapter |
+| **Auth** | JWT (access + refresh tokens), bcryptjs (12 rounds) |
+| **State** | Pinia 3 |
+| **Validation** | Zod 4 |
+| **Icons** | Lucide Vue Next |
+| **Runtime** | Bun |
+| **Testing** | Vitest 4 (unit + integration), Playwright 1.60 (E2E) |
+| **CI/CD** | GitHub Actions, Husky + lint-staged |
 
 ---
 
-## 3. Project Structure
+## Project Structure
 
 ```
 lms-app/
-├── app/
-│   ├── components/      # Vue components
-│   │   ├── admin/        # Admin-specific components
-│   │   ├── common/      # Shared/reusable components
-│   │   ├── course/      # Course-related components
-│   │   └── lesson/       # Lesson-related components
-│   │
-│   ├── composables/      # Vue composables (reusable logic)
-│   │   └── useAuth.ts   # Authentication logic
-│   │
-│   ├── layouts/          # Page layouts
-│   │   ├── auth.vue     # Login/Register layout
-│   │   └── default.vue  # Main layout with navigation
-│   │
-│   ├── middleware/       # Route middleware
-│   │   └── auth.ts      # Authentication guard
-│   │
-│   ├── pages/            # File-based routing
-│   │   ├── index.vue    # Home page
-│   │   ├── login.vue    # Login page
-│   │   ├── register.vue # Register page
-│   │   ├── dashboard.vue
-│   │   ├── courses/
-│   │   │   ├── index.vue      # Course listing
-│   │   │   └── [id].vue       # Course detail
-│   │   └── admin/
-│   │       └── index.vue      # Admin dashboard
-│   │
-│   └── stores/          # Pinia state management
+├── app/                    # Frontend (Vue 3)
+│   ├── components/         # Reusable components
+│   ├── composables/        # Shared logic (useAppToast)
+│   ├── layouts/            # landing, auth, dashboard, default
+│   ├── middleware/          # auth.ts, guest.ts
+│   ├── pages/              # 26 file-based routes
+│   └── stores/             # Pinia auth store
 │
-├── server/               # Backend API routes (Nitro)
-│   ├── api/
-│   │   ├── admin/       # Admin endpoints
-│   │   ├── auth/        # Auth endpoints
-│   │   ├── courses/     # Course endpoints
-│   │   └── ...           # (instructor, messages, notifications, etc.)
-│   └── utils/           # Shared utilities (jwt, auth, notify, etc.)
+├── server/                 # Backend (Nitro)
+│   ├── api/                # 74+ REST endpoint handlers
+│   │   ├── admin/
+│   │   ├── announcements/
+│   │   ├── auth/
+│   │   ├── courses/
+│   │   ├── instructor/
+│   │   ├── messages/
+│   │   ├── notifications/
+│   │   ├── student/
+│   │   └── user/
+│   └── utils/              # jwt, password, auth, notify, rate-limit, sanitize
 │
 ├── prisma/
-│   ├── schema.prisma    # Database schema
-│   └── migrations/     # Database migrations
+│   ├── schema.prisma       # 15 models, 6 enums
+│   ├── seed.ts             # Demo data
+│   └── migrations/         # Version-controlled migrations
 │
-├── lib/
-│   └── prisma.ts        # Prisma client singleton
-│
-├── .env                 # Environment variables (DO NOT COMMIT)
-├── .github/workflows/    # CI/CD pipeline
-├── e2e/                  # End-to-End tests (Playwright)
-├── nuxt.config.ts        # Nuxt configuration
-└── package.json
+├── tests/                  # 10 test files (129 tests)
+├── e2e/                    # Playwright browser tests
+├── .github/workflows/      # CI pipeline
+├── docs/                   # Documentation
+└── lib/                    # Prisma client singleton
 ```
-
-### 3.1 Key Directories Explained
-
-| Directory | Purpose |
-|-----------|---------|
-| `app/components` | Reusable Vue components |
-| `app/composables` | Shared logic using Vue 3 Composition API |
-| `app/layouts` | Page layouts (nav, footer, etc.) |
-| `app/pages` | File-based routing - each `.vue` file is a route |
-| `server/api` | REST API endpoints (Nitro backend) |
-| `app/stores` | Pinia stores for global state |
-| `prisma` | Database schema and migrations |
-| `e2e/` | Playwright end-to-end browser tests |
 
 ---
 
-## 4. Coding Practices
+## Quick Start
 
-### 4.1 Vue 3 Composition API
+### Prerequisites
 
-We use Vue 3's Composition API with `<script setup>`:
+- **Bun** v1.x — [install guide](https://bun.sh)
+- **PostgreSQL** 14+ — running locally or via Docker
+- **Node.js** 22+ (fallback if Bun unavailable)
 
-```vue
-<script setup lang="ts">
-// Define props
-defineProps<{
-  title: string
-  count?: number
-}>()
-
-// Define emits
-const emit = defineEmits<{
-  (e: 'update', value: string): void
-}>()
-
-// Reactive state
-const message = ref('Hello')
-
-// Computed
-const reversed = computed(() => message.value.split('').reverse().join(''))
-
-// Methods
-const handleClick = () => {
-  emit('update', message.value)
-}
-</script>
-
-<template>
-  <div>{{ message }} - {{ reversed }}</div>
-</template>
-```
-
-### 4.2 TypeScript
-
-Always use TypeScript. Define types for:
-
-- **API responses**
-- **Form data**
-- **Component props**
-
-```typescript
-// Example: Type for user
-interface User {
-  id: number
-  email: string
-  firstName: string
-  lastName: string
-  role: 'ADMIN' | 'INSTRUCTOR' | 'STUDENT'
-}
-```
-
-### 4.3 Naming Conventions
-
-| Type | Convention | Example |
-|------|------------|---------|
-| Components | PascalCase | `CourseCard.vue`, `UserAvatar.vue` |
-| Composable functions | camelCase with `use` prefix | `useAuth.ts`, `useCourse.ts` |
-| API routes | kebab-case | `login.post.ts`, `courses.get.ts` |
-| Database models | PascalCase | `User`, `Course`, `Enrollment` |
-| Variables/functions | camelCase | `userName`, `getCourses()` |
-
-### 4.4 File Organization
-
-Each component file should be self-contained:
-
-```vue
-<!-- Good: All in one file -->
-<script setup lang="ts">
-// Props, emits, imports, logic here
-</script>
-
-<template>
-<!-- Template here -->
-</template>
-
-<style scoped>
-/* Scoped styles here */
-</style>
-```
-
-### 4.5 Database Access
-
-**Always use Prisma** - never write raw SQL:
-
-```typescript
-// ✅ Good - using Prisma
-const user = await prisma.user.findUnique({
-  where: { id: userId }
-})
-
-// ❌ Bad - raw SQL
-const user = await prisma.$queryRaw`SELECT * FROM users WHERE id = ${userId}`
-```
-
-### 4.6 API Routes
-
-Place API files in `server/api/`:
-
-```
-server/api/
-├── auth/
-│   ├── register.post.ts
-│   └── login.post.ts
-├── courses/
-│   ├── index.get.ts
-│   ├── index.post.ts
-│   └── [id].get.ts
-└── users/
-    └── [id].get.ts
-```
-
-Use appropriate HTTP methods in filenames:
-- `login.post.ts` → POST /api/auth/login
-- `courses.get.ts` → GET /api/courses
-- `[id].delete.ts` → DELETE /api/users/:id
-
----
-
-## 5. Common Workflows
-
-### 5.1 Creating a New Page
-
-1. Create a new `.vue` file in `app/pages/`:
-
-```vue
-<!-- app/pages/about.vue -->
-<script setup lang="ts">
-definePageMeta({
-  title: 'About Us'
-})
-</script>
-
-<template>
-  <div>
-    <h1>About Us</h1>
-  </div>
-</template>
-```
-
-2. The page is automatically accessible at `/about`
-
-### 5.2 Creating a New Component
-
-1. Create file in appropriate folder:
-
-```vue
-<!-- app/components/course/CourseCard.vue -->
-<script setup lang="ts">
-defineProps<{
-  course: {
-    id: number
-    title: string
-    description: string
-  }
-}>()
-</script>
-
-<template>
-  <div class="course-card">
-    <h3>{{ course.title }}</h3>
-    <p>{{ course.description }}</p>
-  </div>
-</template>
-```
-
-2. Use it in another component:
-
-```vue
-<script setup lang="ts">
-import CourseCard from '~/components/course/CourseCard.vue'
-</script>
-
-<template>
-  <CourseCard :course="myCourse" />
-</template>
-```
-
-### 5.3 Creating a New API Endpoint
-
-1. Create file in `app/server/api/`:
-
-```typescript
-// app/server/api/hello.get.ts
-export default defineEventHandler(async (event) => {
-  return {
-    message: 'Hello, World!'
-  }
-})
-```
-
-2. Access at `GET /api/hello`
-
-### 5.4 Database Schema Changes
-
-1. Update `prisma/schema.prisma`:
-
-```prisma
-model User {
-  id    Int    @id @default(autoincrement())
-  name  String // Added new field
-}
-```
-
-2. Run migration:
+### Setup
 
 ```bash
-bunx prisma migrate dev --name add_name_to_user
-```
+# 1. Clone the repository
+git clone https://github.com/ZeroSiks/lms-app.git
+cd lms-app
 
-The Prisma Client will be automatically updated. No manual generation is needed.
+# 2. Install dependencies
+bun install
 
----
+# 3. Configure environment variables
+cp .env.example .env
+# Edit .env with your PostgreSQL connection string and JWT secrets
 
-## 6. Database Guidelines
+# 4. Create database and apply migrations
+bunx prisma migrate dev
 
-### 6.1 Prisma Schema Rules
+# 5. Seed demo data
+bunx tsx prisma/seed.ts
 
-- Always use `@id` for primary keys
-- Use `@default()` for default values
-- Use `@unique` for unique fields
-- Use relations (`@relation`) for foreign keys
-- Use `Cascade` delete for dependent records
-
-```prisma
-model Course {
-  id          Int      @id @default(autoincrement())
-  title       String
-  instructor  User     @relation("InstructorCourses", fields: [instructorId], references: [id])
-  instructorId Int
-  
-  @@index([instructorId])
-}
-```
-
-### 6.2 Common Prisma Operations
-
-```typescript
-import { prisma } from '@@/lib/prisma'
-
-// Create
-const user = await prisma.user.create({
-  data: {
-    email: 'test@example.com',
-    firstName: 'John',
-    lastName: 'Doe'
-  }
-})
-
-// Read
-const users = await prisma.user.findMany()
-const course = await prisma.course.findUnique({
-  where: { id: 1 },
-  include: { modules: true }
-})
-
-// Update
-await prisma.user.update({
-  where: { id: 1 },
-  data: { firstName: 'Jane' }
-})
-
-// Delete
-await prisma.user.delete({
-  where: { id: 1 }
-})
-```
-
----
-
-## 7. API Development
-
-### 7.1 Creating an API Route
-
-```typescript
-// server/api/courses/index.post.ts
-import { prisma } from '@@/lib/prisma'
-import { z } from 'zod'
-
-// Validation schema
-const createCourseSchema = z.object({
-  title: z.string().min(1),
-  description: z.string(),
-  code: z.string().min(1),
-  instructorId: z.number()
-})
-
-export default defineEventHandler(async (event) => {
-  // Get request body
-  const body = await readBody(event)
-  
-  // Validate
-  const validated = createCourseSchema.parse(body)
-  
-  // Create in database
-  const course = await prisma.course.create({
-    data: validated
-  })
-  
-  return course
-})
-```
-
-### 7.2 Error Handling
-
-```typescript
-export default defineEventHandler(async (event) => {
-  try {
-    // Your logic here
-    return { success: true, data: result }
-  } catch (error) {
-    throw createError({
-      statusCode: 400,
-      message: error.message || 'Something went wrong'
-    })
-  }
-})
-```
-
----
-
-## Quick Reference
-
-### Essential Commands
-
-```bash
-# Start dev server
+# 6. Start the development server
 bun run dev
-
-# Build for production
-bun run build
-
-# Type check
-bun run typecheck
-
-# Run unit + integration tests
-bun run test
-
-# Run E2E tests (requires dev server)
-bun run test:e2e
-
-# Run Prisma Studio (database GUI)
-bunx prisma studio
-
-# Create new migration
-bunx prisma migrate dev --name migration_name
 ```
 
-### Useful Links
+The application will be available at **http://localhost:3000**.
 
-- [Nuxt 4 Docs](https://nuxt.com/docs)
-- [Vue 3 Docs](https://vuejs.org/guide/)
-- [Prisma Docs](https://www.prisma.io/docs)
-- [TailwindCSS Docs](https://tailwindcss.com/docs)
+### Production
+
+```bash
+bun run build
+bunx prisma migrate deploy
+node .output/server/index.mjs
+```
 
 ---
 
-## Getting Help
+## Default Accounts
 
-1. Check the code in `app/` for examples
-2. Look at existing API routes in `app/server/api/`
-3. Ask ~~senior developers in your team~~ ChatGPT, Claude, Gemini or Mistral.
-4. Refer to official documentation links above
+After running the seed script, the following accounts are available:
 
-Happy coding! 🚀
+| Role | Email | Password |
+|---|---|---|
+| **Admin** | `admin@lms.com` | `Admin@12345` |
+| **Instructor** | `dr.smith@lms.com` | `Instructor@123` |
+| **Student** | `alice@lms.com` | `Student@123` |
+| **Student** | `bob@lms.com` | `Student@123` |
+
+**Important:** Change these passwords immediately in any non-development deployment.
+
+---
+
+## Available Scripts
+
+```bash
+bun run dev          # Start development server
+bun run build        # Build for production
+bun run test         # Run Vitest unit + integration tests
+bun run test:watch   # Run tests in watch mode
+bun run test:e2e     # Run Playwright E2E tests (requires dev server)
+bun run typecheck    # Run TypeScript type checking (strict mode)
+```
+
+---
+
+## Documentation
+
+| Document | Description |
+|---|---|
+| [Specification](docs/specification.md) | Functional and non-functional requirements |
+| [System Documentation](docs/system-documentation.md) | Architecture, API reference, database schema, deployment |
+| [Methodology](docs/methodology.md) | SCRUM process, sprint breakdown, team roles, tools |
+| [Risk Assessment](docs/risk-assessment.md) | 16-item risk register with mitigation statuses |
+| [Test Plan](docs/test-plan.md) | 129 test cases, execution summary, bug log |
+| [User Guide](docs/user-guide.md) | End-user instructions for all three roles |
+| [Design Report](docs/group-design-report.md) | Comprehensive group design report |
+| [Developer Guide](docs/dev-guide.md) | Code conventions, component patterns, API development |
+| [Diagrams](docs/diagrams/) | Use Case, Class, Sequence, Activity, ER diagrams |
+
+---
+
+## Team
+
+| Name | Role | Responsibilities |
+|---|---|---|
+| [**Shaamil**](https://github.com/Meedhas) | Backend & Database Architect | Database schema, migrations, user management APIs, authentication |
+| [**Vishaal**](https://github.com/DeVSVishal) | Frontend Lead & UI/UX | Layouts, components, dashboards, responsive design, innovation feature |
+| [**Hameez**](https://github.com/dhari1412) | Full-Stack (Course & Content) | Course catalogue, module/lesson CRUD, enrollment, UML diagrams |
+| [**Lene**](https://github.com/aminathlene) | Full-Stack (Assessment & QA) | Assignments, submissions, grading, messaging, testing, documentation |
+| [**Raaish**](https://github.com/ZeroSiks) | Team Lead | Skeleton app, task assignment, PR reviews, CI/CD, methodology, risk assessment |
+
+---
+
+**UFCF7S-30-2 — Systems Development — 2025/26**

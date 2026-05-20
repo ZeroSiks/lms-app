@@ -154,7 +154,7 @@
 - TypeScript throughout for type safety
 - Prisma ORM for type-safe database operations
 - Git version control with conventional commit messages
-- Comprehensive README with developer setup guide
+- Comprehensive README with setup guide, default credentials, and script reference
 
 ### NFR-06: Data Protection
 - Passwords never stored in plaintext (bcrypt hashed)
