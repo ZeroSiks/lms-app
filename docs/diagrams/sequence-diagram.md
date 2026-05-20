@@ -136,3 +136,36 @@ sequenceDiagram
     DB-->>API: Submission with grade + feedback
     API-->>Page: Shows grade badge + feedback
 ```
+
+## 4. Announcement Posting & Delivery
+
+```mermaid
+sequenceDiagram
+    actor Instructor
+    participant Web as Nuxt App
+    participant API as Nitro Server
+    participant DB as PostgreSQL
+
+    Instructor->>Web: Open admin announcements
+    Web->>API: GET /api/courses (for course list)
+    API->>DB: SELECT Course
+    DB-->>API: Courses
+    API-->>Web: [{ id, title, code }]
+
+    Instructor->>Web: Fill announcement form + select course
+    Web->>API: POST /api/announcements { title, content, courseId }
+    API->>API: Sanitize input (strip HTML)
+    API->>DB: INSERT Announcement
+    API->>DB: SELECT enrolled students
+    API->>DB: INSERT Notification (for each enrolled student)
+    DB-->>API: Announcement created
+    API-->>Web: { id, title, content, Course: {...}, User: {...} }
+
+    actor Student
+    Student->>Web: Check notifications/bell icon
+    Web->>API: GET /api/notifications
+    API->>DB: SELECT Notification WHERE userId=? AND type='announcement'
+    DB-->>API: [{ type: "announcement", title: "New announcement in CS101" }]
+    API-->>Web: { notifications, unreadCount }
+    Web-->>Student: Bell badge shows unread count
+```

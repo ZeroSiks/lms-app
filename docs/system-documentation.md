@@ -173,6 +173,15 @@ lms-app/
 | GET | `/messages/:userId` | Yes | Conversation with specific user |
 | POST | `/messages` | Yes | Send a message |
 
+### Announcements (`/api/announcements/`)
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | `/announcements` | Yes | List all announcements (or filter by `?courseId=`) |
+| POST | `/announcements` | Admin/Instructor | Post a new announcement to a course |
+| PUT | `/announcements/:id` | Author/Admin | Edit an announcement |
+| DELETE | `/announcements/:id` | Author/Admin | Delete an announcement |
+
 ### Notifications (`/api/notifications/`)
 
 | Method | Endpoint | Auth | Description |
@@ -186,9 +195,9 @@ lms-app/
 
 See the [ER Diagram](diagrams/er-diagram.md) and `prisma/schema.prisma` for the complete data model.
 
-**Key entities (13):** User, Course, Module, Lesson, LessonProgress, Assignment, Submission, Enrollment, Message, Notification, Announcement, Resource, CourseCategory
+**Key entities (15):** User, Course, Module, Lesson, LessonProgress, Assignment, Submission, Enrollment, Message, Notification, Announcement, Resource, CourseCategory, ActivityLog, UserStreak
 
-**Enums (5):** Role, UserStatus, EnrollmentStatus, AssignmentStatus, SubmissionStatus
+**Enums (6):** Role, UserStatus, EnrollmentStatus, AssignmentStatus, SubmissionStatus, ActivityLogType
 
 ---
 

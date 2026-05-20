@@ -58,6 +58,7 @@ rectangle "Administration" {
   usecase "Manage User Accounts" as UC28
   usecase "View System Activity" as UC29
   usecase "View System Statistics" as UC30
+  usecase "Post/Manage Announcements" as UC_ANNOUNCE
 }
 
 rectangle "Profile" {
@@ -118,5 +119,7 @@ Admin --> UC30
 ' Relationships
 UC3 ..> UC4 : includes
 UC7 ..> UC27 : <<requires approval>>
+Instructor --> UC_ANNOUNCE
+Admin --> UC_ANNOUNCE
 
 @enduml

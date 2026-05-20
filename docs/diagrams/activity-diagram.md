@@ -115,3 +115,39 @@ flowchart TD
     GradeSaved --> StudentNotified([Student receives notification])
     StudentNotified --> StudentView
 ```
+
+## 4. Posting Course Announcements
+
+```mermaid
+flowchart TD
+    A([Admin/Instructor visits /admin/announcements]) --> B[View existing announcements list]
+    B --> C{Any announcements?}
+    C -->|No| D[Show empty state]
+    C -->|Yes| E[Show announcement cards with course, author, timestamp]
+
+    D --> F[Click "Post Announcement"]
+    E --> F
+
+    F --> G[Open modal form]
+    G --> H[Select target course from dropdown]
+    H --> I[Enter announcement title]
+    I --> J[Enter announcement content]
+    J --> K{All fields valid?}
+    K -->|No| L[Show validation error]
+    K -->|Yes| M[Click "Post Announcement"]
+
+    M --> N[POST /api/announcements]
+    N --> O[Sanitize input — strip HTML tags]
+    O --> P[INSERT Announcement into DB]
+    P --> Q[Query enrolled students for course]
+    Q --> R{Loop: for each enrolled student}
+    R --> S[INSERT Notification (type: 'announcement')]
+    S --> R
+    R --> T[Return created announcement]
+    T --> U[Announcement appears at top of list]
+
+    B --> V{Delete action?}
+    V -->|Click delete| W[Confirm dialog]
+    W -->|Yes| X[DELETE /api/announcements/:id]
+    X --> Y[Remove from list]
+```

@@ -38,6 +38,16 @@ class SubmissionStatus {
   GRADED
   LATE
 }
+class ActivityLogType {
+  <<enumeration>>
+  COMPLETED_MODULE
+  SUBMITTED_ASSIGNMENT
+  STARTED_COURSE
+  RECEIVED_FEEDBACK
+  COMPLETED_LESSON
+  ENROLLED_COURSE
+  ACCOUNT_APPROVED
+}
 
 %% Models
 class User {
@@ -62,6 +72,7 @@ class Course {
   +String title
   +String description
   +String? thumbnailUrl
+  +String? color
   +String code
   +String? duration
   +DateTime? startDate
@@ -154,6 +165,20 @@ class CourseCategory {
   +String name
 }
 
+class ActivityLog {
+  +Int id
+  +ActivityLogType type
+  +String description
+  +DateTime createdAt
+}
+
+class UserStreak {
+  +Int id
+  +Int currentStreak
+  +Int longestStreak
+  +DateTime lastActiveDate
+}
+
 %% Server Utilities
 class JwtPayload {
   <<interface>>
@@ -171,14 +196,18 @@ User "1" --> "*" Message : sender
 User "1" --> "*" Message : receiver
 User "1" --> "*" Notification : recipient
 User "1" --> "*" Submission : student
+User "1" --> "*" ActivityLog : actor
+User "1" --> "0..1" UserStreak : streak
 
 Course "1" --> "*" Announcement : contains
 Course "1" --> "*" Enrollment : enrolled
 Course "1" --> "*" Module : contains
 Course "0..*" --> "0..1" CourseCategory : category
+Course "1" --> "*" ActivityLog : logs
 
 Module "1" --> "*" Lesson : contains
 Module "1" --> "*" Assignment : contains
+Module "1" --> "*" ActivityLog : logs
 
 Lesson "1" --> "*" LessonProgress : progress
 Lesson "1" --> "*" Resource : resources
@@ -190,4 +219,5 @@ User ..> UserStatus : status
 Enrollment ..> EnrollmentStatus : status
 Assignment ..> AssignmentStatus : status
 Submission ..> SubmissionStatus : status
+ActivityLog ..> ActivityLogType : type
 ```

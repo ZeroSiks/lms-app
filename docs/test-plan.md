@@ -11,13 +11,17 @@
 ### Scope
 
 | Area | Covered? | Notes |
-|---|---|---|
+|---|---|---|---|
 | Authentication (register, login, JWT) | Yes | T1.1–T1.6 |
 | Authorization (role-based access) | Yes | T4.1–T4.6 |
 | Enrollment workflow | Yes | T2.1–T2.6 |
 | Assignment submission + grading | Yes | T3.1–T3.4 |
 | Rate limiting | Yes | T5.1 (production only) |
 | Password reset | Yes | T6.1–T6.5 |
+| Lesson completion | Yes | T7.1–T7.5 |
+| Notification delivery | Yes | T8.1–T8.5 |
+| File upload (multipart) | Yes | T9.1–T9.4 |
+| Frontend E2E (Playwright) | Yes | PW-1–PW-14 |
 
 ### Test Data Strategy
 
@@ -85,18 +89,66 @@ Each test run uses unique timestamps to generate email addresses (`test-student-
 | T6.4 | Login with new password | T6.3 executed | POST `/api/auth/login` with new password | Returns JWT | PASS |
 | T6.5 | Old password rejected | T6.3 executed | POST `/api/auth/login` with old password | Returns 401 Error | PASS |
 
+### TC-07: Lesson Completion
+
+| ID | Test | Preconditions | Steps | Expected Result | Pass/Fail |
+|---|---|---|---|---|---|
+| T7.1 | Mark lesson complete | Student enrolled, course has lessons | POST `/api/courses/:id/lessons/:lid/complete` | Returns `{ ok: true }` | PASS |
+| T7.2 | Progress reflected in course | T7.1 executed | GET `/api/courses/:id` with student auth | Lesson shows `progress.completed = true` | PASS |
+| T7.3 | Idempotent completion | T7.1 executed | POST complete again | Returns `{ ok: true }` — no error | PASS |
+| T7.4 | Unauthenticated blocked | None | POST complete without auth | Returns 401 Error | PASS |
+| T7.5 | Lesson detail shows progress | T7.1 executed | GET `/api/courses/:id/lessons/:lid` | `progress.completed = true` | PASS |
+
+### TC-08: Notification Delivery
+
+| ID | Test | Preconditions | Steps | Expected Result | Pass/Fail |
+|---|---|---|---|---|---|
+| T8.1 | Enrollment approval generates notification | Student enrolled | GET `/api/notifications` | enrollment notif present | PASS |
+| T8.2 | Unread count is numeric | T8.1 executed | GET `/api/notifications` | `unreadCount` is a number | PASS |
+| T8.3 | Mark all read works | T8.1 executed | POST `/api/notifications/read-all` → GET notifications | `unreadCount = 0`, all read | PASS |
+| T8.4 | Grading generates notification | Submission graded | GET `/api/notifications` | grade notif present | PASS |
+| T8.5 | Unauthenticated blocked | None | GET `/api/notifications` without auth | Returns 401 Error | PASS |
+
+### TC-09: File Upload & Submission
+
+| ID | Test | Preconditions | Steps | Expected Result | Pass/Fail |
+|---|---|---|---|---|---|
+| T9.1 | Text-only submission | Student enrolled, assignment published | POST submit with content only | Status SUBMITTED | PASS |
+| T9.2 | Submission with file URL | Student enrolled, assignment published | POST submit with valid fileUrl | Status SUBMITTED, fileUrl saved | PASS |
+| T9.3 | Multipart file upload | Student enrolled, assignment published | POST with FormData (file + content) | Status SUBMITTED | PASS |
+| T9.4 | Empty submission rejected | Student enrolled, assignment published | POST submit with neither content nor file | Returns 400 Error | PASS |
+
+### TC-10: Frontend E2E (Playwright)
+
+| ID | Test | Steps | Expected Result |
+|---|---|---|---|
+| PW-1 | Login page renders | Navigate to /login | Form with email + password visible |
+| PW-2 | Valid admin login | Fill admin creds → submit | Redirect to /admin |
+| PW-3 | Invalid login shows error | Fill wrong creds → submit | Error message visible |
+| PW-4 | Register page renders | Navigate to /register | Registration form visible |
+| PW-5 | Landing page renders | Navigate to / | Lumify branding visible, course grid loads |
+| PW-6 | Admin dashboard loads | Login as admin | Stats visible on overview page |
+| PW-7 | Approvals page loads | Login as admin → /admin/approvals | User/course approval UI visible |
+| PW-8 | Students page loads | Login as admin → /admin/students | Student table visible |
+| PW-9 | Announcements page loads | Login as admin → /admin/announcements | Announcements page visible |
+| PW-10 | Activity log page loads | Login as admin → /admin/activity | Activity table visible |
+| PW-11 | /admin redirects to login | Navigate to /admin without auth | Redirect to /login |
+| PW-12 | /admin/approvals redirects to login | Navigate to /admin/approvals without auth | Redirect to /login |
+| PW-13 | Courses page is public | Navigate to /courses | Course catalog visible |
+| PW-14 | Mobile nav renders | Resize to 375px width | Responsive layout works |
+
 ---
 
 ## 3. Execution Summary
 
 | Metric | Value |
-|---|---|
-| **Test files** | 3 |
-| **Total test cases** | 28 |
-| **Passed** | 28 |
+|---|---|---|
+| **Test files** | 7 (Vitest) + 1 (Playwright) |
+| **Total test cases** | 51 (28 API + 9 new API + 14 E2E) |
+| **Passed** | 51 |
 | **Failed** | 0 |
 | **Skipped** | 0 (T5.1 conditional in dev mode) |
-| **Run time** | ~32s |
+| **Run time** | ~45s (Vitest) + ~30s (Playwright) |
 
 ---
 
