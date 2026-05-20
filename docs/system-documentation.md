@@ -46,8 +46,9 @@ lms-app/
 ├── server/                 # Backend (Nitro)
 │   ├── api/                # API routes (REST)
 │   │   ├── admin/          # Admin endpoints
+│   │   ├── announcements/  # Announcement endpoints
 │   │   ├── auth/           # Authentication endpoints
-│   │   ├── courses/        # Student course endpoints
+│   │   ├── courses/        # Course endpoints
 │   │   ├── instructor/     # Instructor endpoints
 │   │   ├── messages/       # Messaging endpoints
 │   │   ├── notifications/  # Notification endpoints
@@ -56,17 +57,30 @@ lms-app/
 │   └── utils/              # Server utilities (jwt, password, auth, notify, rate-limit, sanitize)
 │
 ├── prisma/                 # Database
-│   ├── schema.prisma       # Data model (13 models, 5 enums)
-│   ├── seed.ts             # Seed data (superadmin)
+│   ├── schema.prisma       # Data model (15 models, 6 enums)
+│   ├── seed.ts             # Seed data (admin + instructor + students + courses)
 │   └── migrations/         # Version-controlled schema migrations
 │
 ├── lib/                    # Shared library code
 │   └── prisma.ts           # Prisma client singleton
 │
-├── tests/                  # Integration tests (Vitest)
-│   ├── auth.test.ts        # Authentication + password reset tests
-│   ├── enrollment.test.ts  # Enrollment + admin auth tests
-│   └── assignment.test.ts  # Assignment submission + grading tests
+├── tests/                  # Tests (Vitest)
+│   ├── auth.test.ts        # Authentication + password reset (6 tests)
+│   ├── enrollment.test.ts  # Enrollment + admin auth (12 tests)
+│   ├── assignment.test.ts  # Assignment submission + grading (4 tests)
+│   ├── lessons.test.ts     # Lesson completion (5 tests)
+│   ├── notifications.test.ts # Notification delivery (5 tests)
+│   ├── file-upload.test.ts # File upload + validation (4 tests)
+│   ├── auth.middleware.test.ts # Middleware logic (14 assertions)
+│   ├── requireAuth.test.ts # JWT verification (8 assertions)
+│   ├── assignments.validation.test.ts # Assignment validation (33 assertions)
+│   └── dashboard.stats.test.ts # Dashboard stats computation (12 assertions)
+│
+├── e2e/                    # End-to-End tests (Playwright)
+│   └── auth.spec.ts        # Auth flows + admin navigation (13 tests)
+│
+├── .github/workflows/      # CI/CD pipeline
+│   └── ci.yml              # GitHub Actions (typecheck, migrate, seed, test, e2e)
 │
 ├── docs/                   # Documentation
 │   ├── specification.md    # Draft specification
@@ -149,7 +163,6 @@ lms-app/
 | GET | `/admin/stats` | System-wide aggregate statistics |
 | GET | `/admin/pending-users` | Pending user registrations (with search) |
 | GET | `/admin/activity` | Unified activity feed (25 events) |
-| GET | `/admin/instructors` | Active instructor list |
 | GET | `/admin/users` | User directory (filters: role, status, search) |
 | POST | `/admin/users/:id/approve` | Approve pending user |
 | POST | `/admin/users/:id/reject` | Reject pending user |
@@ -193,7 +206,7 @@ lms-app/
 
 ## 4. Database Schema
 
-See the [ER Diagram](diagrams/er-diagram.md) and `prisma/schema.prisma` for the complete data model.
+See the [ER Diagram](diagrams/ER/er-diagram.md) and `prisma/schema.prisma` for the complete data model.
 
 **Key entities (15):** User, Course, Module, Lesson, LessonProgress, Assignment, Submission, Enrollment, Message, Notification, Announcement, Resource, CourseCategory, ActivityLog, UserStreak
 

@@ -1,4 +1,4 @@
-# Draft Specification — Lumify LMS
+# Specification — Lumify LMS
 
 ## System Overview
 
@@ -10,6 +10,9 @@
 - **Database:** PostgreSQL with Prisma ORM v7
 - **Authentication:** JWT (access + refresh tokens), bcrypt password hashing
 - **State Management:** Pinia v3
+- **Testing:** Vitest v4 (unit + integration), Playwright v1.60 (E2E)
+- **Validation:** Zod v4
+- **CI/CD:** GitHub Actions, Husky + lint-staged pre-commit hooks
 
 **Brand:** "Lumify — Learn Today. Lead Tomorrow."
 
@@ -71,7 +74,7 @@
 
 ### FR-08: Notification System
 - Bell icon with unread count badge in top navigation
-- Notification types: enrollment, grade, message, assignment
+- Notification types: enrollment, grade, message, assignment, announcement
 - Clickable notifications link to relevant pages
 - Mark all read functionality
 - Admin dashboard shows synthetic pending-approval notifications
@@ -104,7 +107,7 @@
 - Account metadata display (email, role, join date)
 
 ### FR-14: Security Features
-- Server-side authentication on all protected API routes (17 admin endpoints secured)
+- Server-side authentication on all protected API routes (25+ admin endpoints secured)
 - Rate limiting on authentication endpoints (5 req/min login, 3 req/min register)
 - Input sanitization (HTML stripping) on all user-provided text fields
 - File upload validation (type whitelist, size limits, magic byte verification)
