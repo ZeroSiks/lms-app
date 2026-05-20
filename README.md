@@ -2,7 +2,7 @@
 
 **Learn Today. Lead Tomorrow.**
 
-A full-stack Learning Management System built as the group capstone project for **UFCF7S-30-2 — Systems Development** (2025/26). Lumify supports three user roles — Student, Instructor, and Administrator — with course delivery, assignment grading, direct messaging, and a learning streak gamification tracker.
+A full-stack Learning Management System built as the group capstone project for **UFCF7S-30-2 — Systems Development** (2026). Lumify supports three user roles — Student, Instructor, and Administrator — with course delivery, assignment grading, direct messaging, and a learning streak gamification tracker.
 
 ![Tech Stack](https://img.shields.io/badge/Nuxt-4.x-00DC82?logo=nuxt.js) ![Vue](https://img.shields.io/badge/Vue-3.5-4FC08D?logo=vue.js) ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript) ![Prisma](https://img.shields.io/badge/Prisma-7.x-2D3748?logo=prisma) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14+-4169E1?logo=postgresql) ![Tests](https://img.shields.io/badge/tests-129%20passed-brightgreen) ![TypeCheck](https://img.shields.io/badge/types-0%20errors-brightgreen)
 
@@ -208,4 +208,4 @@ bun run typecheck    # Run TypeScript type checking (strict mode)
 
 ---
 
-**UFCF7S-30-2 — Systems Development — 2025/26**
+**UFCF7S-30-2 — Systems Development — 2026**
