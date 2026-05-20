@@ -5,12 +5,17 @@ import { verifyAccessToken } from '@@/server/utils/jwt'
 //   Streak Calculator
 // ====================
 
-function calcStreak(dates: string[]): number {
+function calcStreak(dates: (string | undefined)[]): number {
     if (!dates.length) return 0
-    const set = new Set(dates)
+    const valid = dates.filter((d): d is string => typeof d === 'string')
+    if (!valid.length) return 0
+    const set = new Set(valid)
     const today = new Date()
     today.setHours(0, 0, 0, 0)
-    const fmt = (d: Date) => d.toISOString().split('T')[0]
+    const fmt = (d: Date): string => {
+      const iso = d.toISOString()
+      return iso.substring(0, iso.indexOf('T'))
+    }
     const yesterday = new Date(today.getTime() - 86400000)
     if (!set.has(fmt(today)) && !set.has(fmt(yesterday))) return 0
     const start = set.has(fmt(today)) ? new Date(today) : new Date(yesterday)
@@ -100,7 +105,10 @@ export default defineEventHandler(async (event) => {
 
     const completedDates = lessonProgressAll
         .filter(p => p.completedAt)
-        .map(p => p.completedAt!.toISOString().split('T')[0])
+        .map(p => {
+          const iso = p.completedAt!.toISOString()
+          return iso.substring(0, iso.indexOf('T'))
+        })
 
     const streak = calcStreak(completedDates)
     const totalCompleted = lessonProgressAll.length

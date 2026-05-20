@@ -71,9 +71,9 @@ bun install
 
 3. **Run database migrations**
 
-   ```bash
-   bunx prisma migrate dev --name init
-   ```
+```bash
+bunx prisma migrate dev
+```
 
 ### 1.4 Start Development Server
 
@@ -136,13 +136,15 @@ lms-app/
 │   │   └── admin/
 │   │       └── index.vue      # Admin dashboard
 │   │
-│   ├── server/           # Server-side code (API routes)
-│   │   └── api/
-│   │       ├── auth/     # Auth endpoints
-│   │       ├── courses/  # Course endpoints
-│   │       └── users/    # User endpoints
-│   │
 │   └── stores/          # Pinia state management
+│
+├── server/               # Backend API routes (Nitro)
+│   ├── api/
+│   │   ├── admin/       # Admin endpoints
+│   │   ├── auth/        # Auth endpoints
+│   │   ├── courses/     # Course endpoints
+│   │   └── ...           # (instructor, messages, notifications, etc.)
+│   └── utils/           # Shared utilities (jwt, auth, notify, etc.)
 │
 ├── prisma/
 │   ├── schema.prisma    # Database schema
@@ -152,7 +154,9 @@ lms-app/
 │   └── prisma.ts        # Prisma client singleton
 │
 ├── .env                 # Environment variables (DO NOT COMMIT)
-├── nuxt.config.ts       # Nuxt configuration
+├── .github/workflows/    # CI/CD pipeline
+├── e2e/                  # End-to-End tests (Playwright)
+├── nuxt.config.ts        # Nuxt configuration
 └── package.json
 ```
 
@@ -164,9 +168,10 @@ lms-app/
 | `app/composables` | Shared logic using Vue 3 Composition API |
 | `app/layouts` | Page layouts (nav, footer, etc.) |
 | `app/pages` | File-based routing - each `.vue` file is a route |
-| `app/server/api` | REST API endpoints |
+| `server/api` | REST API endpoints (Nitro backend) |
 | `app/stores` | Pinia stores for global state |
 | `prisma` | Database schema and migrations |
+| `e2e/` | Playwright end-to-end browser tests |
 
 ---
 
@@ -270,10 +275,10 @@ const user = await prisma.$queryRaw`SELECT * FROM users WHERE id = ${userId}`
 
 ### 4.6 API Routes
 
-Place API files in `app/server/api/`:
+Place API files in `server/api/`:
 
 ```
-app/server/api/
+server/api/
 ├── auth/
 │   ├── register.post.ts
 │   └── login.post.ts
@@ -411,7 +416,7 @@ model Course {
 ### 6.2 Common Prisma Operations
 
 ```typescript
-import prisma from '~/lib/prisma'
+import { prisma } from '@@/lib/prisma'
 
 // Create
 const user = await prisma.user.create({
@@ -448,8 +453,8 @@ await prisma.user.delete({
 ### 7.1 Creating an API Route
 
 ```typescript
-// app/server/api/courses/index.post.ts
-import prisma from '~/lib/prisma'
+// server/api/courses/index.post.ts
+import { prisma } from '@@/lib/prisma'
 import { z } from 'zod'
 
 // Validation schema
@@ -504,6 +509,15 @@ bun run dev
 
 # Build for production
 bun run build
+
+# Type check
+bun run typecheck
+
+# Run unit + integration tests
+bun run test
+
+# Run E2E tests (requires dev server)
+bun run test:e2e
 
 # Run Prisma Studio (database GUI)
 bunx prisma studio

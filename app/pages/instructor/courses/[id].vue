@@ -375,7 +375,7 @@ const saveModule = async () => {
         if (editingModule.value) {
             const updated = await $fetch<Module>(`/api/instructor/modules/${editingModule.value.id}`, { method: 'PUT', body: { title: moduleForm.title, description: moduleForm.description } })
             const idx = course.value!.Module.findIndex(m => m.id === editingModule.value!.id)
-            if (idx !== -1) { course.value!.Module[idx].title = updated.title; course.value!.Module[idx].description = updated.description }
+            if (idx !== -1) { const mod = course.value!.Module[idx]; if (mod) { mod.title = updated.title; mod.description = updated.description } }
         } else {
             const created = await $fetch<Module>(`/api/instructor/courses/${courseId}/modules`, { method: 'POST', body: { title: moduleForm.title, description: moduleForm.description } })
             course.value!.Module.push(created)

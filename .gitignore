@@ -30,3 +30,7 @@ logs
 
 superadmin.txt
 .claude/settings.local.json
+
+# Playright
+playwright-report/
+test-results/

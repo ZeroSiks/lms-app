@@ -88,6 +88,12 @@ const benefits = [
     'Track your progress and earn certificates',
     'Connect with expert instructors',
 ]
+
+useHead({
+  bodyAttrs: {
+    style: 'background-color: #020B2D'
+  }
+})
 </script>
 
 <style scoped>

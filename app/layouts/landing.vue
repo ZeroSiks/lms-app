@@ -35,3 +35,11 @@
         </main>
     </div>
 </template>
+
+<script setup lang="ts">
+useHead({
+  bodyAttrs: {
+    style: 'background-color: #ffffff'
+  }
+})
+</script>

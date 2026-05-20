@@ -250,6 +250,12 @@ import { GraduationCap, BookOpen, ArrowRight, Clock } from 'lucide-vue-next'
 
 definePageMeta({ layout: false })
 
+useHead({
+  bodyAttrs: {
+    style: 'background-color: #050a18'
+  }
+})
+
 interface Course {
     id: number; title: string; description: string; code: string
     duration: string | null

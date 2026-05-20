@@ -184,8 +184,6 @@ model User {
 
 }
 
-// ─── New Models ───────────────────────────────────────────────────────────────
-
 model ActivityLog {
   id          Int             @id @default(autoincrement())
   userId      Int
@@ -201,7 +199,6 @@ model ActivityLog {
   @@index([createdAt])
 }
 
-
 model UserStreak {
   id             Int      @id @default(autoincrement())
   userId         Int      @unique
@@ -210,8 +207,6 @@ model UserStreak {
   lastActiveDate DateTime @db.Date
   User           User     @relation(fields: [userId], references: [id])
 }
-
-// ─── Enums ────────────────────────────────────────────────────────────────────
 
 enum ActivityLogType {
   COMPLETED_MODULE

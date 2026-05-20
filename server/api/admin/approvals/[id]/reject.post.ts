@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
 
   const params = paramsSchema.safeParse({ id: getRouterParam(event, 'id') })
   if (!params.success) {
-    throw createError({ statusCode: 400, message: params.error.errors[0]?.message ?? 'Invalid input' })
+    throw createError({ statusCode: 400, message: params.error.issues[0]?.message ?? 'Invalid input' })
   }
 
   const { id } = params.data

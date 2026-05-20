@@ -86,8 +86,14 @@ Your dashboard shows:
 ### Notifications
 
 - The **bell icon** in the top navigation shows unread notification count
-- Click to view: enrollment approvals, new messages, graded assignments
+- Click to view: enrollment approvals, new messages, graded assignments, course announcements
 - Click **Mark all read** to clear the badge
+
+### Announcements
+
+- Announcements from your instructors appear in your notifications
+- Click on an announcement notification to open the course page
+- Check the course page for pinned announcements from your instructor
 
 ### Profile Settings (`/dashboard/settings`)
 
@@ -147,6 +153,13 @@ Your dashboard shows:
 - Message your students from `/dashboard/messages`
 - Recipients include all students enrolled in your courses
 
+### Posting Announcements
+
+- Navigate to `/admin/announcements` (instructors can access this via the admin sidebar)
+- Click **Post Announcement** and select the target course
+- Write a title and content, then click **Post Announcement**
+- All enrolled students receive a notification with a link to the course
+
 ---
 
 ## Admin Guide
@@ -186,3 +199,10 @@ Search by name or email, filter by role, and approve/reject with one click.
 - Filter by type: All, Registrations, Enrollments, Courses
 - Each event shows: type, user, detail, status, and relative timestamp
 - Click **Refresh** to load latest activity
+
+### Announcements (`/admin/announcements`)
+
+- View all course announcements across the platform
+- Click **Post Announcement** → select a course → enter title and content
+- Delete announcements with the trash icon
+- Posted announcements broadcast notifications to all enrolled students
