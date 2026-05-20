@@ -1,4 +1,5 @@
 {
-  "*.{ts,vue}": ["bunx nuxt typecheck --noEmit 2>/dev/null || true", "bunx eslint --fix 2>/dev/null || true"],
-  "*.{json,md}": ["prettier --write 2>/dev/null || true"]
+  "lint-staged": {
+    "*.{ts,vue}": ["bunx nuxt typecheck --noEmit 2>/dev/null || true"]
+  }
 }
