@@ -5,4 +5,4 @@ CREATE INDEX IF NOT EXISTS idx_course_title_trgm ON "Course" USING GIN ("title" 
 CREATE INDEX IF NOT EXISTS idx_course_description_trgm ON "Course" USING GIN ("description" gin_trgm_ops);
 CREATE INDEX IF NOT EXISTS idx_course_code_lower ON "Course" (LOWER("code"));
 CREATE INDEX IF NOT EXISTS idx_user_email_trgm ON "User" USING GIN ("email" gin_trgm_ops);
-CREATE INDEX IF NOT EXISTS idx_user_name_trgm ON "User" USING GIN ("firstName" gin_trgm_ops || ' ' || "lastName" gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS idx_user_name_trgm ON "User" USING GIN ((("firstName" || ' ' || "lastName")) gin_trgm_ops);

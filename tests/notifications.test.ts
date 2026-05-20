@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import { describe, it, expect, beforeAll } from 'vitest'
 import { $fetch } from 'ofetch'
 
 const BASE = process.env.BASE_URL || 'http://localhost:3001'
@@ -6,6 +6,7 @@ const api = (url: string, opts: Record<string, unknown> = {}) => $fetch(`${BASE}
 
 const ts = Date.now()
 let adminToken: string
+let instructorToken: string
 let studentToken: string
 let studentId: number
 let courseId: number
@@ -31,6 +32,30 @@ describe('Notification Delivery (Test 8)', () => {
       headers: authHeaders(adminToken),
     })
     courseId = course.id
+
+    const instEmail = `test-notif-inst-${ts}@lms.test`
+    await api('/api/auth/register', {
+      method: 'POST',
+      body: { firstName: 'Notif', lastName: 'Instructor', email: instEmail, password: 'InstPass123', role: 'INSTRUCTOR' },
+    })
+    const instPending = await api<Array<{ id: number }>>(`/api/admin/pending-users?search=${encodeURIComponent(instEmail)}`, {
+      headers: authHeaders(adminToken),
+    })
+    await api(`/api/admin/users/${instPending[0].id}/approve`, {
+      method: 'POST',
+      headers: authHeaders(adminToken),
+    })
+    const instLogin = await api<{ accessToken: string }>('/api/auth/login', {
+      method: 'POST',
+      body: { email: instEmail, password: 'InstPass123' },
+    })
+    instructorToken = instLogin.accessToken
+
+    await api(`/api/admin/courses/${courseId}/assign-instructor`, {
+      method: 'POST',
+      body: { instructorId: instPending[0].id },
+      headers: authHeaders(adminToken),
+    })
 
     const stuEmail = `test-notif-${ts}@lms.test`
     await api('/api/auth/register', {
@@ -63,7 +88,7 @@ describe('Notification Delivery (Test 8)', () => {
     const mod = await api<{ id: number }>(`/api/instructor/courses/${courseId}/modules`, {
       method: 'POST',
       body: { title: 'Notif Module', description: 'Test' },
-      headers: authHeaders(adminToken),
+      headers: authHeaders(instructorToken),
     })
     moduleId = mod.id
 
@@ -71,7 +96,7 @@ describe('Notification Delivery (Test 8)', () => {
     const assign = await api<{ id: number }>(`/api/instructor/modules/${moduleId}/assignments`, {
       method: 'POST',
       body: { title: 'Notif Assignment', description: 'Submit', dueDate: futureDate, maxPoints: 100, publish: true },
-      headers: authHeaders(adminToken),
+      headers: authHeaders(instructorToken),
     })
     assignmentId = assign.id
   })
@@ -110,12 +135,12 @@ describe('Notification Delivery (Test 8)', () => {
       headers: authHeaders(studentToken),
     })
     const subs = await api<Array<{ id: number }>>(`/api/instructor/assignments/${assignmentId}/submissions`, {
-      headers: authHeaders(adminToken),
+      headers: authHeaders(instructorToken),
     })
     await api(`/api/instructor/submissions/${subs[0].id}/grade`, {
       method: 'POST',
       body: { grade: 90, feedback: 'Notif test feedback' },
-      headers: authHeaders(adminToken),
+      headers: authHeaders(instructorToken),
     })
     const res = await api<{ notifications: Array<{ type: string }> }>('/api/notifications', {
       headers: authHeaders(studentToken),

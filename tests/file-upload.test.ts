@@ -1,13 +1,12 @@
 import { describe, it, expect, beforeAll } from 'vitest'
 import { $fetch } from 'ofetch'
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
 
 const BASE = process.env.BASE_URL || 'http://localhost:3001'
 const api = (url: string, opts: Record<string, unknown> = {}) => $fetch(`${BASE}${url}`, opts)
 
 const ts = Date.now()
 let adminToken: string
+let instructorToken: string
 let studentToken: string
 let courseId: number
 let moduleId: number
@@ -32,6 +31,30 @@ describe('File Upload & Validation (Test 9)', () => {
       headers: authHeaders(adminToken),
     })
     courseId = course.id
+
+    const instEmail = `test-upload-inst-${ts}@lms.test`
+    await api('/api/auth/register', {
+      method: 'POST',
+      body: { firstName: 'Upload', lastName: 'Instructor', email: instEmail, password: 'InstPass123', role: 'INSTRUCTOR' },
+    })
+    const instPending = await api<Array<{ id: number }>>(`/api/admin/pending-users?search=${encodeURIComponent(instEmail)}`, {
+      headers: authHeaders(adminToken),
+    })
+    await api(`/api/admin/users/${instPending[0].id}/approve`, {
+      method: 'POST',
+      headers: authHeaders(adminToken),
+    })
+    const instLogin = await api<{ accessToken: string }>('/api/auth/login', {
+      method: 'POST',
+      body: { email: instEmail, password: 'InstPass123' },
+    })
+    instructorToken = instLogin.accessToken
+
+    await api(`/api/admin/courses/${courseId}/assign-instructor`, {
+      method: 'POST',
+      body: { instructorId: instPending[0].id },
+      headers: authHeaders(adminToken),
+    })
 
     const stuEmail = `test-upload-${ts}@lms.test`
     await api('/api/auth/register', {
@@ -63,7 +86,7 @@ describe('File Upload & Validation (Test 9)', () => {
     const mod = await api<{ id: number }>(`/api/instructor/courses/${courseId}/modules`, {
       method: 'POST',
       body: { title: 'Upload Module', description: 'Test' },
-      headers: authHeaders(adminToken),
+      headers: authHeaders(instructorToken),
     })
     moduleId = mod.id
 
@@ -71,7 +94,7 @@ describe('File Upload & Validation (Test 9)', () => {
     const assign = await api<{ id: number }>(`/api/instructor/modules/${moduleId}/assignments`, {
       method: 'POST',
       body: { title: 'Upload Assignment', description: 'Submit a file', dueDate: futureDate, maxPoints: 100, publish: true },
-      headers: authHeaders(adminToken),
+      headers: authHeaders(instructorToken),
     })
     assignmentId = assign.id
   })
@@ -149,12 +172,9 @@ describe('File Upload & Validation (Test 9)', () => {
       headers: authHeaders(adminToken),
     })
 
-    const txtPath = join(process.cwd(), 'public', 'uploads', 'sub-1779258626040-leupgygnatp.txt')
-    const textContent = readFileSync(txtPath)
-
     const formData = new FormData()
     formData.append('content', 'Multipart form submission test')
-    formData.append('file', new Blob([textContent], { type: 'text/plain' }), 'test-submission.txt')
+    formData.append('file', new Blob(['Hello World'], { type: 'text/plain' }), 'test-submission.txt')
 
     const res = await $fetch<{ status: string }>(`${BASE}/api/courses/${courseId}/assignments/${assignmentId}/submit`, {
       method: 'POST',
